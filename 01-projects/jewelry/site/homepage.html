@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mood of Mine — Current Exhibition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0A0A0A;
+    --paper: #FFFFFF;
+    --rule: #0A0A0A;
+    --mute: #6B6B6B;
+    --hairline: rgba(10,10,10,0.18);
+    --serif: 'Cormorant Garamond', 'Times New Roman', serif;
+    --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--paper); color: var(--ink); }
+  body {
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  a { color: inherit; text-decoration: none; }
+  img, svg { display: block; max-width: 100%; }
+
+  .mono { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+  .serif { font-family: var(--serif); font-weight: 400; }
+  .rule { border-top: 1px solid var(--rule); }
+  .hair { border-top: 1px solid var(--hairline); }
+
+  /* ───── utility bar ───── */
+  .utility {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 28px;
+    border-bottom: 1px solid var(--ink);
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  .utility-left, .utility-right { display: flex; gap: 22px; }
+  .utility a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .dot::before { content: "●"; font-size: 8px; margin-right: 6px; vertical-align: 2px; }
+
+  /* ───── masthead ───── */
+  .masthead {
+    text-align: center;
+    padding: 36px 28px 8px;
+    border-bottom: 1px solid var(--ink);
+  }
+  .wordmark {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: 56px;
+    letter-spacing: 0.42em;
+    padding-left: 0.42em;
+    line-height: 1;
+  }
+  .submark {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.5em;
+    margin-top: 14px;
+    color: var(--mute);
+  }
+  .submark span { border-bottom: 1px solid var(--ink); padding: 0 4px; color: var(--ink); }
+  nav.primary {
+    margin-top: 22px;
+    padding: 14px 0 0;
+    display: flex; justify-content: center; gap: 44px;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.22em; text-transform: uppercase;
+  }
+  nav.primary a { padding-bottom: 14px; border-bottom: 2px solid transparent; }
+  nav.primary a:hover, nav.primary a.active { border-bottom-color: var(--ink); }
+
+  /* ───── hero / current exhibition ───── */
+  .hero {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--ink);
+  }
+  .hero-art {
+    background: #F4F2EE;
+    border-right: 1px solid var(--ink);
+    min-height: 620px;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    padding: 60px;
+  }
+  .hero-art .corner {
+    position: absolute; font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink);
+  }
+  .hero-art .corner.tl { top: 18px; left: 22px; }
+  .hero-art .corner.tr { top: 18px; right: 22px; }
+  .hero-art .corner.bl { bottom: 18px; left: 22px; }
+  .hero-art .corner.br { bottom: 18px; right: 22px; }
+  .pixel-frame {
+    border: 1px dashed var(--ink);
+    padding: 28px;
+    width: 100%; max-width: 460px; aspect-ratio: 1/1;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .hero-copy { padding: 70px 60px; display: flex; flex-direction: column; justify-content: space-between; gap: 40px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 14px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--ink);
+  }
+  .eyebrow .blink {
+    width: 6px; height: 6px; background: var(--ink);
+    animation: blink 1.2s steps(2, end) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  .hero-title {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: 88px;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    margin: 28px 0;
+  }
+  .hero-title em { font-style: italic; }
+  .hero-sub { font-family: var(--serif); font-size: 22px; line-height: 1.4; max-width: 38ch; color: var(--ink); font-style: italic; font-weight: 300; }
+  .hero-meta-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    padding-top: 28px; border-top: 1px solid var(--ink);
+  }
+  .hero-meta-grid dt { font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mute); margin-bottom: 4px; }
+  .hero-meta-grid dd { font-family: var(--serif); font-size: 20px; }
+  .cta-row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 16px 26px;
+    background: var(--ink); color: var(--paper);
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.28em; text-transform: uppercase;
+    border: 1px solid var(--ink);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn.ghost { background: transparent; color: var(--ink); }
+  .btn .arrow { font-family: var(--mono); }
+
+  /* ───── featured lot ───── */
+  .featured {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    border-bottom: 1px solid var(--ink);
+  }
+  .featured-art {
+    background: #FAFAF8;
+    border-right: 1px solid var(--ink);
+    min-height: 720px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 80px;
+    position: relative;
+  }
+  .featured-art .label-card {
+    position: absolute; bottom: 32px; left: 32px;
+    background: var(--paper); border: 1px solid var(--ink);
+    padding: 14px 18px;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.2em; text-transform: uppercase;
+  }
+  .featured-copy { padding: 90px 80px; display: flex; flex-direction: column; gap: 36px; justify-content: center; }
+  .lotnum-big {
+    font-family: var(--mono);
+    font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase;
+    color: var(--mute);
+  }
+  .lotnum-big span { color: var(--ink); border-bottom: 1px solid var(--ink); padding-bottom: 4px; }
+  .lot-title { font-family: var(--serif); font-weight: 300; font-size: 64px; line-height: 1; font-style: italic; }
+  .lot-spec dl { display: grid; grid-template-columns: 130px 1fr; row-gap: 12px; }
+  .lot-spec dt { font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mute); padding-top: 4px; }
+  .lot-spec dd { font-family: var(--serif); font-size: 18px; line-height: 1.4; }
+  .aura {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.32em; text-transform: uppercase;
+    padding: 10px 14px;
+    border: 1px solid var(--ink);
+    display: inline-block;
+  }
+  .bid-block {
+    border: 1px solid var(--ink);
+    padding: 26px;
+    background: var(--paper);
+  }
+  .bid-row { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0; }
+  .bid-row + .bid-row { border-top: 1px dashed var(--hairline); }
+  .bid-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mute); }
+  .bid-val { font-family: var(--serif); font-size: 28px; }
+  .bid-val.lg { font-size: 40px; }
+  .bid-cta { margin-top: 18px; display: flex; gap: 10px; }
+  .bid-cta .btn { flex: 1; justify-content: center; }
+  .timer { font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); }
+  .timer.urgent { color: #B00020; }
+
+  /* ───── current sale strip ───── */
+  .section-head {
+    padding: 60px 28px 32px;
+    display: flex; justify-content: space-between; align-items: end; gap: 40px;
+    border-bottom: 1px solid var(--ink);
+  }
+  .section-head h2 { font-family: var(--serif); font-weight: 300; font-size: 56px; line-height: 1; font-style: italic; }
+  .section-head .meta { font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--mute); text-align: right; }
+  .section-head .meta a { color: var(--ink); border-bottom: 1px solid var(--ink); padding-bottom: 2px; }
+
+  .grid-3 {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
+    border-bottom: 1px solid var(--ink);
+  }
+  .lot-card {
+    border-right: 1px solid var(--ink);
+    padding: 32px 28px 28px;
+    display: flex; flex-direction: column; gap: 18px;
+    background: var(--paper);
+    position: relative;
+  }
+  .lot-card:last-child { border-right: none; }
+  .lot-card .thumb {
+    background: #F4F2EE;
+    aspect-ratio: 4/5;
+    display: flex; align-items: center; justify-content: center;
+    padding: 36px;
+    border: 1px solid var(--hairline);
+    position: relative;
+  }
+  .lot-card .thumb .tag {
+    position: absolute; top: 10px; left: 10px;
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
+    background: var(--paper); padding: 4px 8px; border: 1px solid var(--ink);
+  }
+  .lot-card .thumb .watch {
+    position: absolute; top: 10px; right: 10px;
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--mute);
+  }
+  .lot-card h3 { font-family: var(--serif); font-weight: 400; font-style: italic; font-size: 30px; line-height: 1; }
+  .lot-card .lot-no { font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--mute); }
+  .lot-card .materials { font-family: var(--serif); font-size: 15px; color: var(--ink); line-height: 1.4; }
+  .lot-card .lot-aura { font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; }
+  .lot-card .lot-bid {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding-top: 14px; border-top: 1px solid var(--ink); margin-top: auto;
+  }
+  .lot-card .lot-bid .now { font-family: var(--serif); font-size: 24px; }
+  .lot-card .lot-bid .left { font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; }
+
+  /* ───── editorial / studio strip ───── */
+  .studio {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    border-bottom: 1px solid var(--ink);
+  }
+  .studio-art {
+    background: #0A0A0A;
+    color: #F4F2EE;
+    padding: 90px 70px;
+    display: flex; flex-direction: column; gap: 30px;
+    justify-content: center;
+    border-right: 1px solid var(--ink);
+  }
+  .studio-art .eyebrow { color: #F4F2EE; border-color: #F4F2EE; }
+  .studio-art h3 { font-family: var(--serif); font-weight: 300; font-style: italic; font-size: 64px; line-height: 1; }
+  .studio-art p { font-family: var(--serif); font-size: 20px; line-height: 1.45; max-width: 42ch; }
+  .studio-art .sig { font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; }
+  .studio-art .btn { background: transparent; color: #F4F2EE; border-color: #F4F2EE; align-self: flex-start; }
+  .studio-img {
+    background: #1A1A1A;
+    min-height: 560px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .studio-img .frame {
+    border: 1px solid #F4F2EE;
+    width: 70%; aspect-ratio: 3/4;
+    display: flex; align-items: center; justify-content: center;
+    padding: 30px;
+  }
+  .studio-img svg { stroke: #F4F2EE; }
+
+  /* ───── commission strip ───── */
+  .commission {
+    padding: 80px 28px;
+    text-align: center;
+    border-bottom: 1px solid var(--ink);
+  }
+  .commission .eyebrow { display: inline-flex; border: none; padding: 0; }
+  .commission h2 { font-family: var(--serif); font-weight: 300; font-style: italic; font-size: 96px; line-height: 1; margin: 24px auto 30px; max-width: 14ch; }
+  .commission p { font-family: var(--serif); font-size: 22px; line-height: 1.5; max-width: 56ch; margin: 0 auto 36px; color: var(--ink); }
+
+  /* ───── footer ───── */
+  footer {
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .footer-top {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1.2fr;
+    gap: 0;
+    border-bottom: 1px solid var(--ink);
+  }
+  .footer-col { padding: 50px 36px; border-right: 1px solid var(--ink); }
+  .footer-col:last-child { border-right: none; }
+  .footer-col h4 { font-family: var(--mono); font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; margin-bottom: 22px; }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .footer-col a { font-family: var(--serif); font-size: 16px; }
+  .footer-col a:hover { font-style: italic; }
+  .footer-brand .mark { font-family: var(--serif); font-weight: 300; font-size: 40px; letter-spacing: 0.32em; padding-left: 0.32em; }
+  .footer-brand .moofmi-tag { font-family: var(--mono); font-size: 10px; letter-spacing: 0.4em; margin-top: 12px; color: var(--mute); }
+  .footer-brand p { font-family: var(--serif); font-style: italic; font-size: 17px; line-height: 1.5; margin-top: 22px; max-width: 32ch; }
+  .footer-news input {
+    width: 100%;
+    border: none; border-bottom: 1px solid var(--ink);
+    background: transparent; padding: 10px 0;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    outline: none;
+  }
+  .footer-news button {
+    margin-top: 18px; background: var(--ink); color: var(--paper);
+    border: 1px solid var(--ink); padding: 14px 22px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase;
+    cursor: pointer;
+  }
+  .footer-bottom {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 28px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--mute);
+  }
+  .footer-bottom .right { display: flex; gap: 22px; }
+
+  /* ───── responsive ───── */
+  @media (max-width: 900px) {
+    .hero, .featured, .studio, .footer-top { grid-template-columns: 1fr; }
+    .hero-art, .featured-art, .studio-art, .studio-img, .footer-col { border-right: none; border-bottom: 1px solid var(--ink); }
+    .hero-title { font-size: 56px; }
+    .lot-title { font-size: 44px; }
+    .wordmark { font-size: 36px; letter-spacing: 0.34em; padding-left: 0.34em; }
+    .grid-3 { grid-template-columns: 1fr; }
+    .lot-card { border-right: none; border-bottom: 1px solid var(--ink); }
+    .lot-card:last-child { border-bottom: none; }
+    nav.primary { flex-wrap: wrap; gap: 18px; }
+    .hero-copy, .featured-copy { padding: 40px 28px; }
+    .featured-art, .hero-art { padding: 40px; min-height: 420px; }
+    .commission h2 { font-size: 56px; }
+    .section-head { flex-direction: column; align-items: start; }
+    .section-head h2 { font-size: 40px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ───── utility bar ───── -->
+<div class="utility">
+  <div class="utility-left">
+    <span class="dot">Live · Capsule 02</span>
+    <span>Est. 2026 · Salt Lake / New York</span>
+  </div>
+  <div class="utility-right">
+    <a href="#">Watchlist</a>
+    <a href="#">My Bids</a>
+    <a href="#">Account</a>
+    <a href="#">Sign in</a>
+  </div>
+</div>
+
+<!-- ───── masthead ───── -->
+<header class="masthead">
+  <div class="wordmark">MOOD&nbsp;OF&nbsp;MINE</div>
+  <div class="submark">— <span>moofmi</span> —</div>
+  <nav class="primary">
+    <a href="#" class="active">Auctions</a>
+    <a href="#">Capsules</a>
+    <a href="collection-grid.html">Current Sale</a>
+    <a href="#">Commission</a>
+    <a href="#">The Artist</a>
+    <a href="#">Journal</a>
+  </nav>
+</header>
+
+<!-- ───── hero ───── -->
+<section class="hero">
+  <div class="hero-art">
+    <span class="corner tl">Capsule No. 02</span>
+    <span class="corner tr">09 Lots</span>
+    <span class="corner bl">Live Bidding</span>
+    <span class="corner br">Closes Jun 14 · 9 PM MT</span>
+    <div class="pixel-frame">
+      <!-- Pendant SVG -->
+      <svg viewBox="0 0 300 300" width="100%" height="100%" fill="none" stroke="#0A0A0A" stroke-width="1.4">
+        <path d="M40 60 Q150 30 260 60" />
+        <path d="M40 60 Q150 90 260 60" />
+        <line x1="150" y1="78" x2="150" y2="130" />
+        <circle cx="150" cy="170" r="42" />
+        <circle cx="150" cy="170" r="30" stroke-dasharray="2 4" />
+        <circle cx="150" cy="170" r="4" fill="#0A0A0A" />
+        <text x="150" y="252" text-anchor="middle" font-family="JetBrains Mono" font-size="9" letter-spacing="2">LOT NO. 03 — QUIET HOUR</text>
+      </svg>
+    </div>
+  </div>
+  <div class="hero-copy">
+    <div>
+      <div class="eyebrow">
+        <span class="blink"></span>
+        <span>Current Exhibition · Capsule 02</span>
+      </div>
+      <h1 class="hero-title">finally seen.<br><em>just like me.</em></h1>
+      <p class="hero-sub">Nine hand-wrought charms — aura objects for the wearer becoming. Each piece bid as art. Each piece carried as story.</p>
+    </div>
+    <dl class="hero-meta-grid">
+      <div>
+        <dt>Opening</dt>
+        <dd>$20 · $40 · $60</dd>
+      </div>
+      <div>
+        <dt>Closing</dt>
+        <dd>Saturday, Jun 14</dd>
+      </div>
+      <div>
+        <dt>Edition</dt>
+        <dd>1 of 1 · No reprints</dd>
+      </div>
+      <div>
+        <dt>Watchers</dt>
+        <dd class="mono" style="font-size: 16px; letter-spacing: 0.18em;">142 collectors</dd>
+      </div>
+    </dl>
+    <div class="cta-row">
+      <a class="btn" href="collection-grid.html">View all lots <span class="arrow">→</span></a>
+      <a class="btn ghost" href="#">Preview the artist statement</a>
+    </div>
+  </div>
+</section>
+
+<!-- ───── featured lot ───── -->
+<section class="featured">
+  <div class="featured-art">
+    <svg viewBox="0 0 400 500" width="100%" height="100%" fill="none" stroke="#0A0A0A" stroke-width="1.2">
+      <!-- chain -->
+      <path d="M60 30 Q200 20 340 30" stroke-dasharray="3 5" />
+      <line x1="200" y1="40" x2="200" y2="150" />
+      <!-- pendant outline -->
+      <circle cx="200" cy="240" r="90" />
+      <circle cx="200" cy="240" r="74" stroke-dasharray="1 4" />
+      <circle cx="200" cy="240" r="40" />
+      <circle cx="200" cy="240" r="8" fill="#0A0A0A" />
+      <!-- shadow -->
+      <ellipse cx="200" cy="400" rx="100" ry="10" stroke-dasharray="2 3" />
+    </svg>
+    <div class="label-card">
+      LOT NO. 03 · QUIET HOUR<br>
+      Cat. ID — moofmi-c02-03
+    </div>
+  </div>
+  <div class="featured-copy">
+    <div class="lotnum-big">Featured Lot · <span>03 / 09</span></div>
+    <h2 class="lot-title">Quiet Hour</h2>
+    <span class="aura">Aura — Stillness · Interior</span>
+    <div class="lot-spec">
+      <dl>
+        <dt>Materials</dt><dd>14K gold-fill, hand-set moonstone, freshwater pearl</dd>
+        <dt>Dimensions</dt><dd>Pendant 22mm · Chain 18&Prime;</dd>
+        <dt>Edition</dt><dd>1 of 1 · Singular work</dd>
+        <dt>Provenance</dt><dd>Conceived during the second hour of dawn, March</dd>
+      </dl>
+    </div>
+    <div class="bid-block">
+      <div class="bid-row">
+        <span class="bid-label">Opening bid</span>
+        <span class="bid-val">$40</span>
+      </div>
+      <div class="bid-row">
+        <span class="bid-label">Current bid</span>
+        <span class="bid-val lg">$115</span>
+      </div>
+      <div class="bid-row">
+        <span class="bid-label">Bidders · Bids</span>
+        <span class="bid-val">5 · 7</span>
+      </div>
+      <div class="bid-row">
+        <span class="bid-label">Time remaining</span>
+        <span class="timer">02d 14h 22m</span>
+      </div>
+      <div class="bid-cta">
+        <a class="btn" href="lot.html">Place a bid</a>
+        <a class="btn ghost" href="lot.html">Add to watchlist</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───── current sale ───── -->
+<div class="section-head">
+  <h2>The current sale.</h2>
+  <div class="meta">
+    Capsule 02 · 9 lots · Live now<br>
+    <a href="collection-grid.html">View all →</a>
+  </div>
+</div>
+
+<section class="grid-3">
+
+  <a class="lot-card" href="lot.html">
+    <div class="thumb">
+      <span class="tag">Lot 01</span>
+      <span class="watch">28 watching</span>
+      <svg viewBox="0 0 200 220" width="100%" height="100%" fill="none" stroke="#0A0A0A" stroke-width="1.2">
+        <ellipse cx="100" cy="100" rx="60" ry="78" />
+        <ellipse cx="100" cy="100" rx="42" ry="56" stroke-dasharray="2 3" />
+        <line x1="100" y1="20" x2="100" y2="6" />
+      </svg>
+    </div>
+    <div class="lot-no">Lot No. 01 — Charm</div>
+    <h3>Soft Resolve</h3>
+    <div class="materials">Sterling silver, hand-hammered, oxidized clasp</div>
+    <div class="lot-aura">Aura · Boundary &nbsp;/&nbsp; Grace</div>
+    <div class="lot-bid">
+      <div>
+        <div class="bid-label" style="font-size: 9px;">Current bid</div>
+        <div class="now">$72</div>
+      </div>
+      <div class="left">04d 02h left</div>
+    </div>
+  </a>
+
+  <a class="lot-card" href="lot.html">
+    <div class="thumb">
+      <span class="tag">Lot 02</span>
+      <span class="watch">41 watching</span>
+      <svg viewBox="0 0 200 220" width="100%" height="100%" fill="none" stroke="#0A0A0A" stroke-width="1.2">
+        <path d="M100 20 L100 110" />
+        <path d="M70 110 Q100 200 130 110" />
+        <circle cx="100" cy="140" r="22" stroke-dasharray="1 3" />
+      </svg>
+    </div>
+    <div class="lot-no">Lot No. 02 — Drop Earring</div>
+    <h3>Half Light</h3>
+    <div class="materials">14K gold-fill, freshwater pearl drop, set singular</div>
+    <div class="lot-aura">Aura · Becoming &nbsp;/&nbsp; Dawn</div>
+    <div class="lot-bid">
+      <div>
+        <div class="bid-label" style="font-size: 9px;">Current bid</div>
+        <div class="now">$58</div>
+      </div>
+      <div class="left">03d 18h left</div>
+    </div>
+  </a>
+
+  <a class="lot-card" href="lot.html">
+    <div class="thumb">
+      <span class="tag">Lot 03</span>
+      <span class="watch">68 watching</span>
+      <svg viewBox="0 0 200 220" width="100%" height="100%" fill="none" stroke="#0A0A0A" stroke-width="1.2">
+        <path d="M30 60 Q100 36 170 60" stroke-dasharray="2 4" />
+        <line x1="100" y1="68" x2="100" y2="130" />
+        <circle cx="100" cy="160" r="30" />
+        <circle cx="100" cy="160" r="20" stroke-dasharray="1 4" />
+        <circle cx="100" cy="160" r="4" fill="#0A0A0A" />
+      </svg>
+    </div>
+    <div class="lot-no">Lot No. 03 — Pendant</div>
+    <h3>Quiet Hour</h3>
+    <div class="materials">14K gold-fill, moonstone, pearl · Featured</div>
+    <div class="lot-aura">Aura · Stillness &nbsp;/&nbsp; Interior</div>
+    <div class="lot-bid">
+      <div>
+        <div class="bid-label" style="font-size: 9px;">Current bid</div>
+        <div class="now">$115</div>
+      </div>
+      <div class="left">02d 14h left</div>
+    </div>
+  </a>
+
+</section>
+
+<!-- ───── studio strip ───── -->
+<section class="studio">
+  <div class="studio-art">
+    <div class="eyebrow"><span>From the Studio</span></div>
+    <h3>"I make the piece in the hour I most need it."</h3>
+    <p>Every charm is begun during an emotional state worth keeping — not designed for a market, drawn for a feeling. The work is documented as it happens: the hour, the room, the weather. That record is what travels with the piece.</p>
+    <div class="sig">— The Artist · Capsule 02 statement</div>
+    <a class="btn" href="#">Read the full statement</a>
+  </div>
+  <div class="studio-img">
+    <div class="frame">
+      <svg viewBox="0 0 300 400" width="100%" height="100%" fill="none" stroke-width="1.2">
+        <!-- abstract studio shapes -->
+        <rect x="40" y="60" width="220" height="280" stroke-dasharray="2 5"/>
+        <line x1="40" y1="200" x2="260" y2="200"/>
+        <circle cx="150" cy="140" r="40"/>
+        <circle cx="150" cy="280" r="28"/>
+        <line x1="40" y1="60" x2="260" y2="340"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ───── commission ───── -->
+<section class="commission">
+  <div class="eyebrow"><span class="blink"></span><span>By Appointment</span></div>
+  <h2>The piece that's yours alone.</h2>
+  <p>Bespoke commissions begin at $75. Bring the aura, the milestone, or the memory — receive a singular charm crafted in higher-grade materials, with documented provenance and a numbered certificate of authenticity.</p>
+  <a class="btn" href="#">Begin a commission <span class="arrow">→</span></a>
+</section>
+
+<!-- ───── footer ───── -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-col footer-brand">
+      <div class="mark">MOOD OF MINE</div>
+      <div class="moofmi-tag">— moofmi —</div>
+      <p>Wearable art as aura. Quiet edition. No reprints. Every piece bid by the collector who would carry its story.</p>
+    </div>
+    <div class="footer-col">
+      <h4>The Sale</h4>
+      <ul>
+        <li><a href="collection-grid.html">Current capsule</a></li>
+        <li><a href="#">Past auctions</a></li>
+        <li><a href="#">How bidding works</a></li>
+        <li><a href="#">Auction calendar</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>The House</h4>
+      <ul>
+        <li><a href="#">The artist</a></li>
+        <li><a href="#">Journal</a></li>
+        <li><a href="#">Commission</a></li>
+        <li><a href="#">Private viewings</a></li>
+      </ul>
+    </div>
+    <div class="footer-col footer-news">
+      <h4>Receive the catalogue</h4>
+      <p style="font-family: var(--serif); font-size: 15px; margin-bottom: 18px;">Early access to each capsule before public bidding opens.</p>
+      <input type="email" placeholder="your email" />
+      <button>Join the list</button>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 Mood of Mine · All works original</div>
+    <div class="right">
+      <a href="#">Terms</a>
+      <a href="#">Provenance</a>
+      <a href="#">Shipping</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

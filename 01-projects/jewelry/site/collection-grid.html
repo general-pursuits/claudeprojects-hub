@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mood of Mine — Capsule 02 · The Current Sale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0A0A0A;
+    --paper: #FFFFFF;
+    --rule: #0A0A0A;
+    --mute: #6B6B6B;
+    --hairline: rgba(10,10,10,0.18);
+    --serif: 'Cormorant Garamond', 'Times New Roman', serif;
+    --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--paper); color: var(--ink); }
+  body { font-family: var(--sans); font-size: 14px; line-height: 1.55; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  a { color: inherit; text-decoration: none; }
+  img, svg { display: block; max-width: 100%; }
+
+  /* ───── utility bar + masthead (shared with homepage) ───── */
+  .utility {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 28px;
+    border-bottom: 1px solid var(--ink);
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  .utility-left, .utility-right { display: flex; gap: 22px; }
+  .utility a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .dot::before { content: "●"; font-size: 8px; margin-right: 6px; vertical-align: 2px; }
+
+  .masthead {
+    text-align: center;
+    padding: 36px 28px 8px;
+    border-bottom: 1px solid var(--ink);
+  }
+  .wordmark {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: 56px;
+    letter-spacing: 0.42em;
+    padding-left: 0.42em;
+    line-height: 1;
+  }
+  .submark { font-family: var(--mono); font-size: 10px; letter-spacing: 0.5em; margin-top: 14px; color: var(--mute); }
+  .submark span { border-bottom: 1px solid var(--ink); padding: 0 4px; color: var(--ink); }
+  nav.primary {
+    margin-top: 22px; padding: 14px 0 0;
+    display: flex; justify-content: center; gap: 44px;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.22em; text-transform: uppercase;
+  }
+  nav.primary a { padding-bottom: 14px; border-bottom: 2px solid transparent; }
+  nav.primary a:hover, nav.primary a.active { border-bottom-color: var(--ink); }
+
+  /* ───── breadcrumb ───── */
+  .crumbs {
+    padding: 14px 28px;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--mute);
+    border-bottom: 1px solid var(--ink);
+    display: flex; gap: 10px;
+  }
+  .crumbs a { color: var(--ink); }
+  .crumbs span.sep { color: var(--mute); }
+
+  /* ───── sale header ───── */
+  .sale-head {
+    display: grid; grid-template-columns: 1.4fr 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--ink);
+  }
+  .sale-head-l {
+    padding: 70px 60px;
+    border-right: 1px solid var(--ink);
+    display: flex; flex-direction: column; gap: 28px;
+  }
+  .sale-head-l .eyebrow {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.32em; text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 14px;
+  }
+  .sale-head-l .eyebrow .blink {
+    width: 6px; height: 6px; background: var(--ink);
+    animation: blink 1.2s steps(2, end) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  .sale-head-l h1 {
+    font-family: var(--serif); font-weight: 300;
+    font-size: 96px; line-height: 0.92;
+    letter-spacing: -0.02em;
+  }
+  .sale-head-l h1 em { font-style: italic; }
+  .sale-head-l .lede {
+    font-family: var(--serif); font-style: italic;
+    font-size: 20px; line-height: 1.5; max-width: 52ch; color: var(--ink);
+  }
+
+  .sale-head-r { padding: 60px 50px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px 24px; align-content: start; }
+  .stat dt { font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--mute); margin-bottom: 8px; }
+  .stat dd { font-family: var(--serif); font-size: 32px; line-height: 1; }
+  .stat dd small { font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mute); display: block; margin-top: 6px; }
+  .timer-band {
+    grid-column: 1 / -1;
+    margin-top: 14px;
+    padding: 20px 22px;
+    background: var(--ink); color: var(--paper);
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase;
+  }
+  .timer-band .clock {
+    font-family: var(--serif); font-style: italic; font-size: 24px; letter-spacing: 0;
+    color: var(--paper); text-transform: none;
+  }
+
+  /* ───── filter / sort bar ───── */
+  .filter-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--ink);
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    background: var(--paper);
+    position: sticky; top: 0;
+    z-index: 10;
+  }
+  .filter-bar .group { display: flex; align-items: center; gap: 14px; }
+  .filter-bar .group label { color: var(--mute); }
+  .filter-bar .chip {
+    padding: 6px 12px; border: 1px solid var(--ink);
+    cursor: pointer;
+  }
+  .filter-bar .chip.active { background: var(--ink); color: var(--paper); }
+  .filter-bar .pill {
+    padding: 6px 12px; border: 1px solid var(--hairline);
+    cursor: pointer;
+  }
+  .filter-bar .pill.active { border-color: var(--ink); }
+  .filter-bar select {
+    border: 1px solid var(--ink); padding: 6px 12px;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    background: var(--paper); color: var(--ink);
+  }
+
+  /* ───── lot grid ───── */
+  .grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    border-bottom: 1px solid var(--ink);
+  }
+  .lot {
+    border-right: 1px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+    padding: 36px 32px 32px;
+    display: flex; flex-direction: column; gap: 16px;
+    position: relative;
+    background: var(--paper);
+  }
+  .lot:nth-child(3n) { border-right: none; }
+  .lot .thumb {
+    background: #F4F2EE;
+    aspect-ratio: 4/5;
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px;
+    border: 1px solid var(--hairline);
+    position: relative;
+  }
+  .lot .thumb .tag {
+    position: absolute; top: 10px; left: 10px;
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
+    background: var(--paper); padding: 4px 8px; border: 1px solid var(--ink);
+  }
+  .lot .thumb .watching {
+    position: absolute; top: 10px; right: 10px;
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--mute);
+  }
+  .lot .thumb .closing {
+    position: absolute; bottom: 10px; left: 10px;
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    background: var(--ink); color: var(--paper); padding: 4px 8px;
+  }
+  .lot .thumb .closing.urgent { background: #B00020; }
+  .lot .lot-no { font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--mute); }
+  .lot h3 { font-family: var(--serif); font-weight: 400; font-style: italic; font-size: 32px; line-height: 0.98; }
+  .lot .materials { font-family: var(--serif); font-size: 15px; line-height: 1.4; }
+  .lot .aura { font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; padding: 6px 0; border-top: 1px dashed var(--hairline); border-bottom: 1px dashed var(--hairline); }
+  .lot .bid-foot {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    border-top: 1px solid var(--ink); margin-top: auto;
+    padding-top: 16px;
+  }
+  .lot .bid-col dt { font-family: var(--mono); font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--mute); margin-bottom: 4px; }
+  .lot .bid-col dd { font-family: var(--serif); font-size: 22px; line-height: 1; }
+  .lot .bid-col.right { text-align: right; }
+  .lot .bid-col.right dd { font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; padding-top: 6px; }
+  .lot .actions { margin-top: 18px; display: flex; gap: 8px; }
+  .lot .btn-sm {
+    flex: 1; text-align: center; padding: 12px 14px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase;
+    border: 1px solid var(--ink); background: var(--ink); color: var(--paper);
+    cursor: pointer;
+  }
+  .lot .btn-sm.ghost { background: transparent; color: var(--ink); flex: 0 0 44px; padding: 12px 0; }
+
+  /* ───── pagination ───── */
+  .pagination {
+    padding: 50px 28px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    border-bottom: 1px solid var(--ink);
+  }
+  .pagination .pages { display: flex; gap: 10px; }
+  .pagination .pages a {
+    width: 36px; height: 36px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--hairline);
+  }
+  .pagination .pages a.active { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+
+  /* ───── footer (shared with homepage) ───── */
+  footer { background: var(--paper); color: var(--ink); }
+  .footer-top {
+    display: grid; grid-template-columns: 1.4fr 1fr 1fr 1.2fr;
+    border-bottom: 1px solid var(--ink);
+  }
+  .footer-col { padding: 50px 36px; border-right: 1px solid var(--ink); }
+  .footer-col:last-child { border-right: none; }
+  .footer-col h4 { font-family: var(--mono); font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; margin-bottom: 22px; }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .footer-col a { font-family: var(--serif); font-size: 16px; }
+  .footer-col a:hover { font-style: italic; }
+  .footer-brand .mark { font-family: var(--serif); font-weight: 300; font-size: 40px; letter-spacing: 0.32em; padding-left: 0.32em; }
+  .footer-brand .moofmi-tag { font-family: var(--mono); font-size: 10px; letter-spacing: 0.4em; margin-top: 12px; color: var(--mute); }
+  .footer-brand p { font-family: var(--serif); font-style: italic; font-size: 17px; line-height: 1.5; margin-top: 22px; max-width: 32ch; }
+  .footer-news input { width: 100%; border: none; border-bottom: 1px solid var(--ink); background: transparent; padding: 10px 0; font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; outline: none; }
+  .footer-news button { margin-top: 18px; background: var(--ink); color: var(--paper); border: 1px solid var(--ink); padding: 14px 22px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; cursor: pointer; }
+  .footer-bottom { display: flex; justify-content: space-between; align-items: center; padding: 18px 28px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mute); }
+  .footer-bottom .right { display: flex; gap: 22px; }
+
+  @media (max-width: 1100px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .lot:nth-child(3n) { border-right: 1px solid var(--ink); }
+    .lot:nth-child(2n) { border-right: none; }
+  }
+  @media (max-width: 900px) {
+    .sale-head, .footer-top { grid-template-columns: 1fr; }
+    .sale-head-l, .footer-col { border-right: none; border-bottom: 1px solid var(--ink); }
+    .sale-head-l h1 { font-size: 56px; }
+    .sale-head-l { padding: 40px 28px; }
+    .sale-head-r { padding: 40px 28px; }
+    .grid { grid-template-columns: 1fr; }
+    .lot { border-right: none !important; }
+    .filter-bar { flex-direction: column; align-items: start; gap: 14px; padding: 16px 20px; }
+    .wordmark { font-size: 36px; letter-spacing: 0.34em; padding-left: 0.34em; }
+    nav.primary { flex-wrap: wrap; gap: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ───── utility bar ───── -->
+<div class="utility">
+  <div class="utility-left">
+    <span class="dot">Live · Capsule 02</span>
+    <span>Est. 2026 · Salt Lake / New York</span>
+  </div>
+  <div class="utility-right">
+    <a href="#">Watchlist (3)</a>
+    <a href="#">My Bids</a>
+    <a href="#">Account</a>
+    <a href="#">Sign in</a>
+  </div>
+</div>
+
+<!-- ───── masthead ───── -->
+<header class="masthead">
+  <div class="wordmark"><a href="homepage.html">MOOD&nbsp;OF&nbsp;MINE</a></div>
+  <div class="submark">— <span>moofmi</span> —</div>
+  <nav class="primary">
+    <a href="homepage.html">Auctions</a>
+    <a href="#">Capsules</a>
+    <a href="#" class="active">Current Sale</a>
+    <a href="#">Commission</a>
+    <a href="#">The Artist</a>
+    <a href="#">Journal</a>
+  </nav>
+</header>
+
+<!-- ───── breadcrumb ───── -->
+<div class="crumbs">
+  <a href="homepage.html">Auctions</a> <span class="sep">/</span>
+  <a href="#">Capsules</a> <span class="sep">/</span>
+  <span>Capsule 02 · finally seen. just like me.</span>
+</div>
+
+<!-- ───── sale header ───── -->
+<section class="sale-head">
+  <div class="sale-head-l">
+    <div class="eyebrow"><span class="blink"></span> <span>The Current Sale · Capsule No. 02</span></div>
+    <h1>finally seen.<br><em>just like me.</em></h1>
+    <p class="lede">Nine hand-wrought charms — aura objects for the wearer becoming. Bidding opens at $20, $40, or $60. Each piece is one of one. No reprints, no restocks. The collector sets the price the piece is worth carrying.</p>
+  </div>
+  <dl class="sale-head-r">
+    <div class="stat">
+      <dt>Lots</dt>
+      <dd>09<small>singular works</small></dd>
+    </div>
+    <div class="stat">
+      <dt>Watchers</dt>
+      <dd>142<small>collectors following</small></dd>
+    </div>
+    <div class="stat">
+      <dt>Bids placed</dt>
+      <dd>38<small>across capsule</small></dd>
+    </div>
+    <div class="stat">
+      <dt>Bidders</dt>
+      <dd>21<small>unique collectors</small></dd>
+    </div>
+    <div class="timer-band">
+      <span>Closes Saturday · Jun 14</span>
+      <span class="clock">02d 14h 22m</span>
+    </div>
+  </dl>
+</section>
+
+<!-- ───── filter / sort bar ───── -->
+<div class="filter-bar">
+  <div class="group">
+    <label>Filter</label>
+    <span class="chip active">All · 09</span>
+    <span class="chip">Charms · 04</span>
+    <span class="chip">Pendants · 02</span>
+    <span class="chip">Earrings · 02</span>
+    <span class="chip">Rings · 01</span>
+  </div>
+  <div class="group">
+    <label>Sort</label>
+    <select>
+      <option>Lot No. · Ascending</option>
+      <option>Current bid · High to low</option>
+      <option>Current bid · Low to high</option>
+      <option>Closing soonest</option>
+      <option>Most watched</option>
+    </select>
+    <label style="margin-left: 18px;">View</label>
+    <span class="pill active">Grid</span>
+    <span class="pill">List</span>
+  </div>
+</div>
+
+<!-- ───── lot grid ───── -->
+<section class="grid">
+
+  <!-- LOT 01 -->
+  <article class="lot">
+    <div class="thumb">
+      <span class="tag">Lot 01</span>
+      <span class="watching">28 watching</span>
+      <span class="closing">04d 02h</span>
+      <svg viewBox="0 0 200 220" width="100%" height="100%" fill="none" stroke="#0A0A0A" stroke-width="1.2">
+        <ellipse cx="100" cy="100" rx="60" ry="78" />
+        <ellipse cx="100" cy="100" rx="42" ry="56" stroke-dasharray="2 3" />
+        <line x1="100" y1="20" x2="100" y2="6" />
+      </svg>
+    </div>
+    <div class="lot-no">Lot No. 01 — Charm</div>
+    <h3>Soft Resolve</h3>
+    <div class="materials">Sterling silver, hand-hammered, oxidized clasp</div>
+    <div class="aura">Aura · Boundary &nbsp;/&nbsp; Grace</div>
+    <dl class="bid-foot">
+      <div class="bid-col">
+        <dt>Current bid</dt>
+        <dd>$72</dd>
+      </div>
+      <div class="bid-col right">
+        <dt>Opened at $40</dt>
+        <dd>3 bidders · 5 bids</dd>
+      </div>
+    </dl>
+    <div class="actions">
+      <a class="btn-sm" href="lot.html">Place bid →</a>
+      <a class="btn-sm ghost" href="#" title="Watch this lot">♡</a>
+    </div>
+  </article>
+
+  <!-- LOT 02 -->
+  <article class="lot">
+    <div class="thumb">
+      <span class="tag">Lot 02</span>
+      <span class="watching">41 watching</span>
+      <span class="closing">03d 18h</span>
+      <svg viewBox="0 0 200 220" width="100%" height="100%" fill="none" stroke="#0A0A0A" stroke-width="1.2">
+        <path d="M100 20 L100 110" />
+        <path d="M70 110 Q100 200 130 110" />
+        <circle cx="100" cy="140" r="22" stroke-dasharray="1 3" />
+      </svg>
+    </div>
+    <div class="lot-no">Lot No. 02 — Drop Earring (single)</div>
+    <h3>Half Light</h3>
+    <div class="materials">14K gold-fill, freshwater pearl drop, set singular</div>
+    <div class="aura">Aura · Becoming &nbsp;/&nbsp; Dawn</div>
+    <dl class="bid-foot">
+      <div class="bid-col">
+        <dt>Current bid</dt>
+        <dd>$58</dd>
+      </div>
+      <div class="bid-col right">
+        <dt>Opened at $40</dt>
+        <dd>2 bidders · 3 bids</dd>
+      </div>
+    </dl>
+    <div class="actions">
+      <a class="btn-sm" href="lot.html">Place bid →</a>
+      <a class="btn-sm ghost" href="#" title="Watch this lot">♡</a>
+    </div>
+  </article>
+
+  <!-- LOT 03 -->
+  <article class="lot">
+    <div class="thumb">
+      <span class="tag">Lot 03 · Featured</span>
+      <span class="watching">68 watching</span>
+      <span class="closing urgent">02d 14h</span>
+      <svg viewBox="0 0 200 220" width="100%" height="100%" fill="none" stroke="#0A0A0A" stroke-width="1.2">
+        <path d="M30 60 Q100 36 170 60" stroke-dasharray="2 4" />
+        <line x1="100" y1="68" x2="100" y2="130" />
+        <circle cx="100" cy="160" r="30" />
+        <circle cx="100" cy="160" r="20" stroke-dasharray="1 4" />
+        <circle cx="100" cy="160" r="4" fill="#0A0A0A" />
+      </svg>
+    </div>
+    <div class="lot-no">Lot No. 03 — Pendant</div>
+    <h3>Quiet Hour</h3>
+    <div class="materials">14K gold-fill, hand-set moonstone, freshwater pearl</div>
+    <div class="aura">Aura · Stillness &nbsp;/&nbsp; Interior</div>
+    <dl class="bid-foot">
+      <div class="bid-col">
+        <dt>Current bid</dt>
+        <dd>$115</dd>
+      </div>
+      <div class="bid-col right">
+        <dt>Opened at $40</dt>
+        <dd>5 bidders · 7 bids</dd>
+      </div>
+    </dl>
+    <div class="actions">
+      <a class="btn-sm" href="lot.html">Place bid →</a>
+      <a class="btn-sm ghost" href="#" title="Watch this lot">♡</a>
+    </div>
+  </article>
+
+  <!-- LOT 04 -->
+  <article class="lot">
+    <div class="thumb">
+      <span class="tag">Lot 04</span>
+      <span class="watching">22 watching</span>
+      <span class="closing">05d 06h</span>
+      <svg viewBox="0 0 200 220" width="100%" height="100%" fill="none" stroke="#0A0A0A" stroke-width="1.2">
+        <circle cx="100" cy="110" r="62" />
+        <circle cx="100" cy="110" r="48" stroke-dasharray="1 3" />
+        <line x1="40" y1="110" x2="160" y2="110" stroke-dasharray="2 4" />
+        <line x1="100" y1="50" x2="100" y2="170" stroke-dasharray="2 4" />
+      </svg>
+    </div>
+    <div class="lot-no">Lot No. 04 — Ring</div>
+    <h3>Mercy</h3>
+    <div class="materials">14K gold-fill, hand-hammered band, sized to wearer</div>
+    <div class="aura">Aura · Repair &nbsp;/&nbsp; Tenderness</div>
+    <dl class="bid-foot">
+      <div class="bid-col">
+        <dt>Current bid</dt>
+        <dd>$48</dd>
+      </div>
+      <div class="bid-col right">
+        <dt>Opened at $20</dt>
+        <dd>4 bidders · 6 bids</dd>
+      </div>
+    </dl>
+    <div class="actions">
+      <a class="btn-sm" href="lot.html">Place bid →</a>
+      <a class="btn-sm ghost" href="#" title="Watch this lot">♡</a>
+    </div>
+  </article>
+
+  <!-- LOT 05 -->
+  <article class="lot">
+    <div class="thumb">
+      <span class="tag">Lot 05</span>
+      <span class="watching">19 watching</span>
+      <span class="closing">04d 18h</span>
+      <svg viewBox="0 0 200 220" width="100%" height="100%" fill="none" stroke="#0A0A0A" stroke-width="1.2">
+        <polygon points="100,40 140,100 100,180 60,100" />
+        <polygon points="100,60 124,100 100,160 76,100" stroke-dasharray="1 3" />
+        <line x1="100" y1="40" x2="100" y2="180" stroke-dasharray="2 4" />
+      </svg>
+    </div>
+    <div class="lot-no">Lot No. 05 — Pendant</div>
+    <h3>Witness</h3>
+    <div class="materials">14K gold-fill, hand-cut citrine, oxidized silver bail</div>
+    <div class="aura">Aura · Knowing &nbsp;/&nbsp; Clarity</div>
+    <dl class="bid-foot">
+      <div class="bid-col">
+        <dt>Current bid</dt>
+        <dd>$95</dd>
+      </div>
+      <div class="bid-col right">
+        <dt>Opened at $60</dt>
+        <dd>3 bidders · 4 bids</dd>
+      </div>
+    </dl>
+    <div class="actions">
+      <a class="btn-sm" href="lot.html">Place bid →</a>
+      <a class="btn-sm ghost" href="#" title="Watch this lot">♡</a>
+    </div>
+  </article>
+
+  <!-- LOT 06 -->
+  <article class="lot">
+    <div class="thumb">
+      <span class="tag">Lot 06</span>
+      <span class="watching">31 watching</span>
+      <span class="closing">06d 02h</span>
+      <svg viewBox="0 0 200 220" width="100%" height="100%" fill="none" stroke="#0A0A0A" stroke-width="1.2">
+        <path d="M50 100 Q100 60 150 100 Q100 140 50 100" />
+        <path d="M70 100 Q100 80 130 100 Q100 120 70 100" stroke-dasharray="1 3" />
+        <line x1="100" y1="30" x2="100" y2="65" stroke-dasharray="2 4" />
+        <line x1="100" y1="135" x2="100" y2="180" stroke-dasharray="2 4" />
+      </svg>
+    </div>
+    <div class="lot-no">Lot No. 06 — Charm</div>
+    <h3>Letting</h3>
+    <div class="materials">Sterling silver, opalite, hand-soldered loop</div>
+    <div class="aura">Aura · Release &nbsp;/&nbsp; Permission</div>
+    <dl class="bid-foot">
+      <div class="bid-col">
+        <dt>Current bid</dt>
+        <dd>$35</dd>
+      </div>
+      <div class="bid-col right">
+        <dt>Opened at $20</dt>
+        <dd>2 bidders · 2 bids</dd>
+      </div>
+    </dl>
+    <div class="actions">
+      <a class="btn-sm" href="lot.html">Place bid →</a>
+      <a class="btn-sm ghost" href="#" title="Watch this lot">♡</a>
+    </div>
+  </article>
+
+  <!-- LOT 07 -->
+  <article class="lot">
+    <div class="thumb">
+      <span class="tag">Lot 07</span>
+      <span class="watching">52 watching</span>
+      <span class="closing">03d 04h</span>
+      <svg viewBox="0 0 200 220" width="100%" height="100%" fill="none" stroke="#0A0A0A" stroke-width="1.2">
+        <rect x="60" y="60" width="80" height="100" rx="6" />
+        <rect x="74" y="78" width="52" height="64" rx="3" stroke-dasharray="1 3" />
+        <text x="100" y="118" text-anchor="middle" font-family="Cormorant Garamond" font-size="24" font-style="italic" fill="#0A0A0A">A</text>
+        <line x1="20" y1="60" x2="60" y2="60" stroke-dasharray="2 4" />
+        <line x1="140" y1="60" x2="180" y2="60" stroke-dasharray="2 4" />
+      </svg>
+    </div>
+    <div class="lot-no">Lot No. 07 — Signet Charm</div>
+    <h3>First Daughter</h3>
+    <div class="materials">14K gold-fill signet, hand-engraved initial of wearer</div>
+    <div class="aura">Aura · Lineage &nbsp;/&nbsp; Name</div>
+    <dl class="bid-foot">
+      <div class="bid-col">
+        <dt>Current bid</dt>
+        <dd>$140</dd>
+      </div>
+      <div class="bid-col right">
+        <dt>Opened at $60</dt>
+        <dd>6 bidders · 9 bids</dd>
+      </div>
+    </dl>
+    <div class="actions">
+      <a class="btn-sm" href="lot.html">Place bid →</a>
+      <a class="btn-sm ghost" href="#" title="Watch this lot">♡</a>
+    </div>
+  </article>
+
+  <!-- LOT 08 -->
+  <article class="lot">
+    <div class="thumb">
+      <span class="tag">Lot 08</span>
+      <span class="watching">26 watching</span>
+      <span class="closing">05d 22h</span>
+      <svg viewBox="0 0 200 220" width="100%" height="100%" fill="none" stroke="#0A0A0A" stroke-width="1.2">
+        <path d="M100 30 L100 110" />
+        <path d="M75 110 Q100 195 125 110" />
+        <ellipse cx="100" cy="155" rx="14" ry="22" stroke-dasharray="1 3" />
+      </svg>
+    </div>
+    <div class="lot-no">Lot No. 08 — Drop Earring (single)</div>
+    <h3>Slow Bloom</h3>
+    <div class="materials">14K gold-fill, rose quartz teardrop, hand-set</div>
+    <div class="aura">Aura · Patience &nbsp;/&nbsp; Opening</div>
+    <dl class="bid-foot">
+      <div class="bid-col">
+        <dt>Current bid</dt>
+        <dd>$62</dd>
+      </div>
+      <div class="bid-col right">
+        <dt>Opened at $40</dt>
+        <dd>3 bidders · 4 bids</dd>
+      </div>
+    </dl>
+    <div class="actions">
+      <a class="btn-sm" href="lot.html">Place bid →</a>
+      <a class="btn-sm ghost" href="#" title="Watch this lot">♡</a>
+    </div>
+  </article>
+
+  <!-- LOT 09 -->
+  <article class="lot">
+    <div class="thumb">
+      <span class="tag">Lot 09 · Namesake</span>
+      <span class="watching">94 watching</span>
+      <span class="closing urgent">02d 06h</span>
+      <svg viewBox="0 0 200 220" width="100%" height="100%" fill="none" stroke="#0A0A0A" stroke-width="1.2">
+        <circle cx="100" cy="110" r="60" />
+        <circle cx="100" cy="110" r="60" stroke-dasharray="2 4" transform="translate(4 0)" opacity="0.5"/>
+        <line x1="40" y1="110" x2="160" y2="110" />
+        <text x="100" y="116" text-anchor="middle" font-family="Cormorant Garamond" font-size="16" font-style="italic" fill="#0A0A0A">just like me</text>
+      </svg>
+    </div>
+    <div class="lot-no">Lot No. 09 — Capsule Namesake</div>
+    <h3>Just Like Me</h3>
+    <div class="materials">14K solid gold, mirror-polish disc, engraved verso</div>
+    <div class="aura">Aura · Recognition &nbsp;/&nbsp; Mirror</div>
+    <dl class="bid-foot">
+      <div class="bid-col">
+        <dt>Current bid</dt>
+        <dd>$185</dd>
+      </div>
+      <div class="bid-col right">
+        <dt>Opened at $60</dt>
+        <dd>8 bidders · 12 bids</dd>
+      </div>
+    </dl>
+    <div class="actions">
+      <a class="btn-sm" href="lot.html">Place bid →</a>
+      <a class="btn-sm ghost" href="#" title="Watch this lot">♡</a>
+    </div>
+  </article>
+
+</section>
+
+<!-- ───── pagination ───── -->
+<div class="pagination">
+  <div>Showing 09 of 09 lots · Capsule 02</div>
+  <div class="pages">
+    <a href="#" class="active">01</a>
+    <a href="#">Past sales →</a>
+  </div>
+</div>
+
+<!-- ───── footer ───── -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-col footer-brand">
+      <div class="mark">MOOD OF MINE</div>
+      <div class="moofmi-tag">— moofmi —</div>
+      <p>Wearable art as aura. Quiet edition. No reprints. Every piece bid by the collector who would carry its story.</p>
+    </div>
+    <div class="footer-col">
+      <h4>The Sale</h4>
+      <ul>
+        <li><a href="#">Current capsule</a></li>
+        <li><a href="#">Past auctions</a></li>
+        <li><a href="#">How bidding works</a></li>
+        <li><a href="#">Auction calendar</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>The House</h4>
+      <ul>
+        <li><a href="#">The artist</a></li>
+        <li><a href="#">Journal</a></li>
+        <li><a href="#">Commission</a></li>
+        <li><a href="#">Private viewings</a></li>
+      </ul>
+    </div>
+    <div class="footer-col footer-news">
+      <h4>Receive the catalogue</h4>
+      <p style="font-family: var(--serif); font-size: 15px; margin-bottom: 18px;">Early access to each capsule before public bidding opens.</p>
+      <input type="email" placeholder="your email" />
+      <button>Join the list</button>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 Mood of Mine · All works original</div>
+    <div class="right">
+      <a href="#">Terms</a>
+      <a href="#">Provenance</a>
+      <a href="#">Shipping</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

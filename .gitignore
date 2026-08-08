@@ -1,0 +1,20 @@
+.DS_Store
+node_modules/
+.netlify/
+__pycache__/
+*.worktrees/
+~$*
+.artifact-build*/
+
+# The live website source is its own repo (github.com/adelitaodm/opportunity-designed).
+# Keep it as a local clone inside website/ but never track it here.
+01-projects/opportunity-designed/01-current/website/deploy-live/
+
+# Archives stay on Addie's Mac (reference-only, never edited)
+04-archive/
+02-archive/
+version-archive/
+snapshots/
+tmp-cloud-migration/
+.remember/
+push-to-cloud.sh

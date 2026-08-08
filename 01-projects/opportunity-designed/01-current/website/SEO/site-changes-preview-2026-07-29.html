@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Site Changes for Approval — AI Visibility Round · Opportunity Designed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--charcoal:#2F2D2A;--parchment:#ECE7DD;--ink-d:#EDEAE3;--ink-l:#1A1714;--violet:#8E72C6;--violet-h:#6B4FA6;--label:#B49CE0;--gray:#6B655B;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',sans-serif;background:var(--parchment);color:var(--ink-l);padding:40px 24px 80px;}
+  .wrap{max-width:1060px;margin:0 auto;}
+  h1{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:clamp(1.8rem,4vw,2.6rem);letter-spacing:.02em;margin-bottom:8px;}
+  .sub{color:var(--gray);font-size:.95rem;margin-bottom:48px;max-width:640px;}
+  .change{margin-bottom:72px;}
+  .chip{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--violet-h);border:1px solid var(--violet);border-radius:2px;padding:4px 10px;margin-bottom:14px;}
+  h2{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:1.5rem;margin-bottom:10px;}
+  .why{color:var(--gray);font-size:.92rem;max-width:680px;margin-bottom:24px;line-height:1.55;}
+  .frames{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start;}
+  .frame{background:#fff;border:1px solid #d8d2c6;border-radius:10px;overflow:hidden;box-shadow:0 8px 24px rgba(47,45,42,.08);}
+  .frame-label{font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gray);padding:9px 14px;border-bottom:1px solid #e4ded2;background:#f7f4ec;}
+  .web{flex:1 1 560px;min-width:480px;}
+  .mobile{width:300px;flex:0 0 300px;}
+  .screen{background:var(--charcoal);color:var(--ink-d);padding:34px 36px;}
+  .mobile .screen{padding:26px 20px;}
+  .k{font-size:.66rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--label);margin-bottom:10px;}
+  .ph{background:rgba(142,114,198,.22);border-bottom:2px solid var(--violet);padding:0 3px;font-weight:600;white-space:nowrap;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #d8d2c6;border-radius:10px;overflow:hidden;font-size:.88rem;}
+  th{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;text-align:left;color:var(--gray);background:#f7f4ec;padding:10px 14px;border-bottom:1px solid #e4ded2;}
+  td{padding:12px 14px;border-bottom:1px solid #efe9dd;vertical-align:top;line-height:1.5;}
+  tr:last-child td{border-bottom:none;}
+  .old{color:#9c4a3c;text-decoration:line-through;text-decoration-thickness:1px;}
+  .new{color:var(--violet-h);font-weight:600;}
+  .note{font-size:.8rem;color:var(--gray);margin-top:14px;line-height:1.5;}
+  /* mock site pieces */
+  .case-nm{font-family:'Anton',sans-serif;font-size:1.5rem;text-transform:uppercase;margin-bottom:4px;}
+  .case-line{font-size:.92rem;color:#c9c4ba;margin-bottom:18px;line-height:1.5;}
+  .proof{display:flex;gap:0;border-top:1px solid rgba(237,234,227,.18);border-bottom:1px solid rgba(237,234,227,.18);}
+  .proof div{flex:1;padding:16px 14px;border-right:1px solid rgba(237,234,227,.18);}
+  .proof div:last-child{border-right:none;}
+  .pn{font-family:'Anton',sans-serif;font-size:1.6rem;color:var(--ink-d);line-height:1;}
+  .pl{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--label);margin-top:7px;line-height:1.4;}
+  .mobile .proof{flex-direction:column;}
+  .mobile .proof div{border-right:none;border-bottom:1px solid rgba(237,234,227,.18);padding:13px 4px;}
+  .mobile .proof div:last-child{border-bottom:none;}
+  .m-h{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:1.35rem;margin-bottom:14px;line-height:1.15;}
+  .m-p{font-size:.9rem;line-height:1.65;color:#d6d1c7;margin-bottom:14px;}
+  .m-p b{color:var(--ink-d);}
+  .m-steps{list-style:none;counter-reset:s;}
+  .m-steps li{counter-increment:s;display:flex;gap:14px;padding:11px 0;border-top:1px solid rgba(237,234,227,.14);font-size:.88rem;line-height:1.5;color:#d6d1c7;}
+  .m-steps li::before{content:"0" counter(s);font-family:'Anton',sans-serif;color:var(--violet);font-size:1rem;padding-top:1px;}
+  .m-steps li b{color:var(--ink-d);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Site changes for approval</h1>
+  <p class="sub">AI-visibility round · 3 changes · 2026-07-29. Nothing ships until you approve. Amber-underlined values are placeholders that need your real numbers — nothing is invented.</p>
+
+  <!-- CHANGE A -->
+  <section class="change">
+    <span class="chip">Change A · Copy only · All pages</span>
+    <h2>One category label, everywhere</h2>
+    <p class="why">The audit's confirmed finding: AI engines can't decide what to call the business, which suppresses recall. The fix is mechanical — one verbatim label, repeated. Proposed label (already used in llms.txt and the backlink kit): <b>"growth strategy consultancy for consumer brands and retailers."</b></p>
+    <table>
+      <tr><th style="width:26%">Location</th><th>Current</th><th>Proposed</th></tr>
+      <tr><td>Homepage meta description</td><td><span class="old">Growth strategy consulting for consumer brands and retailers…</span></td><td><span class="new">Growth strategy consultancy for consumer brands and retailers…</span> (rest unchanged)</td></tr>
+      <tr><td>About meta description</td><td><span class="old">Addie Morrow, independent business consultant: 10+ years…</span></td><td><span class="new">Addie Morrow, founder of Opportunity Designed, a growth strategy consultancy for consumer brands and retailers: 10+ years…</span></td></tr>
+      <tr><td>JSON-LD (ProfessionalService description + Person jobTitle)</td><td><span class="old">varies</span></td><td><span class="new">same verbatim label in both</span></td></tr>
+      <tr><td>Footer line / contact page intro</td><td><span class="old">varies by page</span></td><td><span class="new">same verbatim label</span></td></tr>
+    </table>
+    <p class="note">Visible copy changes are limited to metas, schema, footer, and the contact intro — hero headlines ("Own your category. Lead the pace.") stay untouched.</p>
+  </section>
+
+  <!-- CHANGE B -->
+  <section class="change">
+    <span class="chip">Change B · Rev 2 · Facts, not figures</span>
+    <h2>Proof strips built from public facts</h2>
+    <p class="why">Rev 2 per your call: no confidential performance data. The strips now use only facts that are already public or yours to state — firsts, durations, counts, and placements. AI engines quote these just as readily as percentages, and every value below is already published on your site, in llms.txt, or in the backlink kit. Nothing new is disclosed.</p>
+    <div class="frames">
+      <div class="frame web">
+        <div class="frame-label">Web · homepage case study (Norda)</div>
+        <div class="screen">
+          <div class="k">Case Study</div>
+          <div class="case-nm">Norda</div>
+          <div class="case-line">From niche favorite to top brand in the category, at full price.</div>
+          <div class="proof">
+            <div><div class="pn">Top</div><div class="pl">of the category, from niche favorite</div></div>
+            <div><div class="pn">&lt;3 yrs</div><div class="pl">to get there</div></div>
+            <div><div class="pn">Full price</div><div class="pl">MAP intact, no markdowns</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="frame mobile">
+        <div class="frame-label">Mobile · 375px</div>
+        <div class="screen">
+          <div class="k">Case Study</div>
+          <div class="case-nm" style="font-size:1.25rem;">Norda</div>
+          <div class="case-line" style="font-size:.85rem;">From niche favorite to top brand in the category, at full price.</div>
+          <div class="proof">
+            <div><div class="pn" style="font-size:1.35rem;">Top</div><div class="pl">of the category, from niche favorite</div></div>
+            <div><div class="pn" style="font-size:1.35rem;">&lt;3 yrs</div><div class="pl">to get there</div></div>
+            <div><div class="pn" style="font-size:1.35rem;">Full price</div><div class="pl">MAP intact, no markdowns</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="height:26px"></div>
+    <div class="frames">
+      <div class="frame web">
+        <div class="frame-label">Web · remaining strips (same treatment)</div>
+        <div class="screen">
+          <div class="k">Fubuki</div>
+          <div class="proof" style="margin-bottom:26px;">
+            <div><div class="pn">First</div><div class="pl">major US online retailer to carry the brand</div></div>
+            <div><div class="pn">New name</div><div class="pl">in a category losing relevance</div></div>
+            <div><div class="pn">Reset</div><div class="pl">the category's direction</div></div>
+          </div>
+          <div class="k">SkyZone SkyCon</div>
+          <div class="proof" style="margin-bottom:26px;">
+            <div><div class="pn">3-day</div><div class="pl">executive franchise conference</div></div>
+            <div><div class="pn">Multi-year</div><div class="pl">repeat production</div></div>
+            <div><div class="pn">One clock</div><div class="pl">every team, without a hitch</div></div>
+          </div>
+          <div class="k">Firm-level bar · closes the case-study section</div>
+          <div class="proof">
+            <div><div class="pn">10+ yrs</div><div class="pl">in-house at major retailers</div></div>
+            <div><div class="pn">35+</div><div class="pl">consumer brands</div></div>
+            <div><div class="pn">4</div><div class="pl">national placements: Ulta · Costco · Target · Whole Foods</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="frame mobile">
+        <div class="frame-label">Mobile · firm-level bar</div>
+        <div class="screen">
+          <div class="k">The record</div>
+          <div class="proof">
+            <div><div class="pn" style="font-size:1.35rem;">10+ yrs</div><div class="pl">in-house at major retailers</div></div>
+            <div><div class="pn" style="font-size:1.35rem;">35+</div><div class="pl">consumer brands</div></div>
+            <div><div class="pn" style="font-size:1.35rem;">4</div><div class="pl">national placements: Ulta · Costco · Target · Whole Foods</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="note">Sources for every value: case copy already live on the homepage, llms.txt, and the backlink kit fast facts. No sell-through, revenue, or unit data anywhere. Case-name sizing follows your July 29 mobile fix. Third-party proof (testimonials with Review schema, press mentions) can layer on later once cleared — that's the strongest citation signal of all, and it discloses nothing.</p>
+  </section>
+
+  <!-- CHANGE C -->
+  <section class="change">
+    <span class="chip">Change C · New block · Homepage or About</span>
+    <h2>Named method — citable "how the work runs" block</h2>
+    <p class="why">The audit calls for a codified, teachable system AI can describe in one sentence ("Opportunity Units" was their invented placeholder — discarded). This block names your actual sequence and anchors <b>performance premium</b>, the term you own, with a link to its field note.</p>
+    <div class="frames">
+      <div class="frame web">
+        <div class="frame-label">Web · proposed block</div>
+        <div class="screen">
+          <div class="k">How the work runs</div>
+          <div class="m-h">Find the opportunity.<br>Design the path. Build it.</div>
+          <p class="m-p">Every engagement runs the same buyer's-side sequence — the discipline behind <b>performance premium</b>: premium goods selling at full price, at volume.</p>
+          <ol class="m-steps">
+            <li><div><b>Map</b> — where the category, the shelf, and the numbers say the opening is.</div></li>
+            <li><div><b>Design</b> — positioning, assortment, and the retail path to capture it.</div></li>
+            <li><div><b>Build</b> — the buying and merchandising engine that runs it, full price first.</div></li>
+          </ol>
+        </div>
+      </div>
+      <div class="frame mobile">
+        <div class="frame-label">Mobile · 375px</div>
+        <div class="screen">
+          <div class="k">How the work runs</div>
+          <div class="m-h" style="font-size:1.15rem;">Find the opportunity. Design the path. Build it.</div>
+          <p class="m-p" style="font-size:.85rem;">Every engagement runs the same buyer's-side sequence — the discipline behind <b>performance premium</b>: premium goods selling at full price, at volume.</p>
+          <ol class="m-steps">
+            <li><div><b>Map</b> — where the category, the shelf, and the numbers say the opening is.</div></li>
+            <li><div><b>Design</b> — positioning, assortment, and the retail path to capture it.</div></li>
+            <li><div><b>Build</b> — the buying and merchandising engine that runs it, full price first.</div></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+    <p class="note">Copy is draft — happy to iterate on the step names and phrasing. Once approved, the same three lines go verbatim into llms.txt, the About page, and future directory profiles so every source teaches AI the same sentence.</p>
+  </section>
+</div>
+</body>
+</html>

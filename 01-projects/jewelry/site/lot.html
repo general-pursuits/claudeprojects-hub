@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>moofmi · Quiet Hour — aura charm, 1 of 1 · Lot 03</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ECE8E1;          /* warm bone */
+    --paper: #F7F5F1;       /* card surface */
+    --ink: #211E26;         /* moody near-black, violet tint */
+    --ink-soft: #4C4754;
+    --mute: #938D98;        /* muted mauve-grey */
+    --line: rgba(33,30,38,0.13);
+    --line-2: rgba(33,30,38,0.26);
+    --accent: #6B5A7E;      /* moody plum */
+    --accent-deep: #4E4060;
+    --panel: #E7E1E9;       /* whisper lilac (bid box) */
+    --clay: #9C5B4E;        /* muted urgency */
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --serif: 'Fraunces', Georgia, serif;
+    --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 13.5px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-deep); text-decoration: underline; text-underline-offset: 2px; }
+  svg { display: block; max-width: 100%; }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+  .mono { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; }
+  .label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--mute); }
+
+  /* utility */
+  .utility { border-bottom: 1px solid var(--line); }
+  .utility .wrap { display: flex; justify-content: flex-end; gap: 20px; padding-top: 9px; padding-bottom: 9px; }
+  .utility a, .utility span { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); }
+  .utility a:hover { color: var(--accent); }
+
+  /* brand row */
+  .brandrow { border-bottom: 1px solid var(--line); }
+  .brandrow .wrap { display: flex; align-items: center; justify-content: space-between; padding-top: 26px; padding-bottom: 26px; gap: 30px; }
+  .logo { font-family: var(--sans); font-weight: 600; font-size: 30px; letter-spacing: -0.03em; color: var(--ink); line-height: 1; }
+  .logo .dot { color: var(--accent); }
+  .logo small { display: block; font-family: var(--mono); font-size: 9px; letter-spacing: 0.34em; text-transform: uppercase; color: var(--mute); margin-top: 7px; font-weight: 400; }
+  .search { display: flex; align-items: center; gap: 0; flex: 0 1 360px; }
+  .search input { flex: 1; border: 1px solid var(--line-2); border-right: none; background: var(--paper); padding: 11px 14px; font-family: var(--sans); font-size: 13px; color: var(--ink); outline: none; }
+  .search input::placeholder { color: var(--mute); }
+  .search button { border: 1px solid var(--ink); background: var(--ink); color: var(--bg); font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; padding: 11px 18px; cursor: pointer; }
+  .search button:hover { background: var(--accent); border-color: var(--accent); }
+
+  /* tabs */
+  .tabs { border-bottom: 1px solid var(--line-2); }
+  .tabs .wrap { display: flex; gap: 30px; }
+  .tab { font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-soft); padding: 14px 0; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab:hover { color: var(--ink); text-decoration: none; }
+  .tab.active { color: var(--ink); border-bottom-color: var(--accent); }
+
+  /* breadcrumb + demo */
+  .crumb { padding: 14px 0 4px; }
+  .crumb .wrap { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mute); }
+  .crumb .wrap a { color: var(--ink-soft); }
+  .crumb .sep { color: var(--line-2); margin: 0 4px; }
+  .demo .wrap { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line-2); background: var(--paper); padding: 9px 14px; margin-top: 8px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+  .demo .wrap b { color: var(--clay); }
+  .demo .pill { width: 6px; height: 6px; border-radius: 50%; background: var(--clay); flex: 0 0 auto; }
+
+  /* main grid */
+  .main { padding: 28px 0 10px; }
+  .grid { display: grid; grid-template-columns: 420px 1fr; gap: 30px; align-items: start; }
+
+  /* photo */
+  .photo { border: 1px solid var(--line); background: var(--paper); }
+  .photo .frame { aspect-ratio: 4/5; display: flex; align-items: center; justify-content: center; padding: 54px; position: relative; }
+  .photo .frame .corner { position: absolute; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--mute); }
+  .photo .frame .corner.tl { top: 14px; left: 16px; }
+  .photo .frame .corner.tr { top: 14px; right: 16px; }
+  .photo .strip { display: flex; gap: 8px; padding: 14px; border-top: 1px solid var(--line); }
+  .photo .strip button { width: 52px; height: 52px; border: 1px solid var(--line-2); background: var(--bg); cursor: pointer; padding: 9px; }
+  .photo .strip button.sel { border-color: var(--accent); }
+  .photo .strip button.sel svg { stroke: var(--accent); }
+  .enlarge { padding: 0 14px 14px; }
+
+  /* seller */
+  .seller { border: 1px solid var(--line); background: var(--paper); margin-top: 16px; }
+  .seller .hd { font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mute); padding: 11px 16px; border-bottom: 1px solid var(--line); }
+  .seller .body { padding: 14px 16px; font-size: 13px; }
+  .seller .name { font-weight: 600; font-size: 15px; }
+  .seller .star { color: var(--accent); }
+  .seller .pos { color: #5d7a4e; }
+  .seller .links { margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
+
+  /* detail */
+  .item-title { font-family: var(--serif); font-weight: 500; font-size: 32px; line-height: 1.12; letter-spacing: -0.01em; }
+  .item-sub { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px 14px; }
+  .chip { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); border: 1px solid var(--line-2); padding: 5px 10px; }
+  .chip.accent { color: var(--accent); border-color: var(--accent); }
+
+  /* bid panel */
+  .bidpanel { margin-top: 22px; border: 1px solid var(--line-2); background: var(--panel); padding: 22px 24px; }
+  .bidpanel .top { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 30px; }
+  .stat .label { display: block; margin-bottom: 4px; }
+  .stat .v { font-size: 16px; }
+  .stat .v.price { font-family: var(--serif); font-size: 34px; line-height: 1; font-weight: 500; color: var(--accent); }
+  .stat .v.time { font-family: var(--mono); font-size: 17px; letter-spacing: 0.04em; color: var(--ink); }
+  .stat .v.time.urgent { color: var(--clay); }
+  .bidform { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line-2); }
+  .quick { display: flex; gap: 8px; margin-bottom: 12px; }
+  .quick button { flex: 1; padding: 10px 6px; background: transparent; border: 1px solid var(--line-2); font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; color: var(--ink); cursor: pointer; transition: .12s; }
+  .quick button:hover { border-color: var(--accent); color: var(--accent); }
+  .entry { display: flex; gap: 10px; }
+  .entry .field { flex: 1; display: flex; align-items: center; border: 1px solid var(--ink); background: var(--paper); padding: 0 14px; }
+  .entry .field .cur { font-family: var(--serif); font-size: 22px; color: var(--mute); }
+  .entry .field input { flex: 1; border: none; outline: none; background: transparent; font-family: var(--serif); font-size: 24px; color: var(--ink); padding: 12px 8px; width: 100%; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; border: 1px solid var(--accent); background: var(--accent); color: #F7F5F1; padding: 0 26px; cursor: pointer; transition: .15s; }
+  .btn:hover { background: var(--accent-deep); border-color: var(--accent-deep); text-decoration: none; }
+  .btn.place { white-space: nowrap; }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--ink); width: 100%; padding: 13px 26px; margin-top: 10px; }
+  .btn.ghost:hover { background: var(--ink); color: var(--bg); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .hint { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mute); margin-top: 12px; }
+  .hint.error { color: var(--clay); }
+  .hint.ok { color: #5d7a4e; }
+
+  /* sections */
+  .section { margin-top: 26px; border: 1px solid var(--line); background: var(--paper); }
+  .section > .hd { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mute); padding: 12px 18px; border-bottom: 1px solid var(--line); }
+  .specs { width: 100%; border-collapse: collapse; }
+  .specs tr { border-bottom: 1px solid var(--line); }
+  .specs tr:last-child { border-bottom: none; }
+  .specs td { padding: 11px 18px; font-size: 13px; vertical-align: top; }
+  .specs td.k { width: 170px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mute); }
+  .desc { padding: 18px; font-size: 14px; line-height: 1.7; }
+  .desc .statement { font-family: var(--serif); font-style: italic; font-size: 17px; line-height: 1.5; color: var(--ink); border-left: 2px solid var(--accent); padding-left: 16px; margin-bottom: 14px; }
+  .hist { width: 100%; border-collapse: collapse; }
+  .hist th { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mute); text-align: left; padding: 10px 18px; border-bottom: 1px solid var(--line); font-weight: 500; }
+  .hist td { padding: 10px 18px; font-size: 13px; border-bottom: 1px solid var(--line); }
+  .hist tr:last-child td { border-bottom: none; }
+  .hist td.amt { text-align: right; font-variant-numeric: tabular-nums; }
+  .hist tr.new td { background: #EDE6F0; }
+
+  /* footer */
+  footer { border-top: 1px solid var(--line-2); margin-top: 40px; }
+  footer .wrap { padding: 26px 24px 40px; }
+  footer .flinks { display: flex; flex-wrap: wrap; gap: 8px 18px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; }
+  footer .flinks a { color: var(--ink-soft); }
+  footer .copy { margin-top: 14px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mute); }
+
+  @media (max-width: 860px) {
+    .grid { grid-template-columns: 1fr; }
+    .bidpanel .top { grid-template-columns: 1fr; gap: 16px; }
+    .brandrow .wrap { flex-direction: column; align-items: flex-start; }
+    .search { flex: 1 1 100%; width: 100%; }
+    .tabs .wrap { gap: 18px; overflow-x: auto; }
+    .item-title { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- utility -->
+  <div class="utility"><div class="wrap">
+    <a href="#">Sign in</a><a href="#">Register</a><a href="#">My moofmi</a><a href="#">Watchlist</a><a href="#">Help</a>
+  </div></div>
+
+  <!-- brand -->
+  <div class="brandrow"><div class="wrap">
+    <a href="homepage.html" style="text-decoration:none;">
+      <div class="logo">mo<span class="dot">o</span>fmi<small>mood of mine</small></div>
+    </a>
+    <div class="search">
+      <input type="text" placeholder="Search aura charms, pendants, 1-of-1…" />
+      <button type="button">Search</button>
+    </div>
+  </div></div>
+
+  <!-- tabs -->
+  <div class="tabs"><div class="wrap">
+    <a class="tab active" href="#">Auctions</a>
+    <a class="tab" href="collection-grid.html">Current Sale</a>
+    <a class="tab" href="#">Capsules</a>
+    <a class="tab" href="#">Commission</a>
+    <a class="tab" href="#">The Artist</a>
+    <a class="tab" href="#">Journal</a>
+  </div></div>
+
+  <!-- breadcrumb -->
+  <div class="crumb"><div class="wrap">
+    <a href="homepage.html">Home</a><span class="sep">/</span>
+    <a href="#">Jewelry</a><span class="sep">/</span>
+    <a href="#">Artisan &amp; 1-of-1</a><span class="sep">/</span>
+    <a href="collection-grid.html">Capsule 02</a><span class="sep">/</span>
+    Lot 03
+  </div></div>
+
+  <!-- demo notice -->
+  <div class="demo"><div class="wrap">
+    <span class="pill"></span> Front-end preview — <b>bids run in your browser only</b> — connect Supabase + Stripe to go live
+  </div></div>
+
+  <!-- main -->
+  <div class="main"><div class="wrap">
+    <div class="grid">
+
+      <!-- left: photo + seller -->
+      <div>
+        <div class="photo">
+          <div class="frame">
+            <span class="corner tl">Lot 03 / 09</span>
+            <span class="corner tr">Capsule 02</span>
+            <svg viewBox="0 0 300 360" width="100%" height="100%" fill="none" stroke="#211E26" stroke-width="1.3">
+              <path d="M55 34 Q150 20 245 34" stroke-dasharray="3 5" />
+              <line x1="150" y1="42" x2="150" y2="128" />
+              <circle cx="150" cy="200" r="74" />
+              <circle cx="150" cy="200" r="58" stroke-dasharray="1 4" />
+              <circle cx="150" cy="200" r="30" />
+              <circle cx="150" cy="200" r="6" fill="#6B5A7E" stroke="none" />
+              <ellipse cx="150" cy="320" rx="82" ry="8" stroke-dasharray="2 3" />
+            </svg>
+          </div>
+          <div class="strip">
+            <button class="sel" title="Front"><svg viewBox="0 0 34 34" fill="none" stroke="#211E26" stroke-width="1.4"><circle cx="17" cy="19" r="9"/><line x1="17" y1="5" x2="17" y2="10"/></svg></button>
+            <button title="Detail"><svg viewBox="0 0 34 34" fill="none" stroke="#211E26" stroke-width="1.4"><circle cx="17" cy="17" r="11"/><circle cx="17" cy="17" r="4"/></svg></button>
+            <button title="On body"><svg viewBox="0 0 34 34" fill="none" stroke="#211E26" stroke-width="1.4"><path d="M6 28 Q17 7 28 28"/><circle cx="17" cy="19" r="3"/></svg></button>
+          </div>
+          <div class="enlarge"><a href="#">Enlarge image →</a></div>
+        </div>
+
+        <div class="seller">
+          <div class="hd">Seller</div>
+          <div class="body">
+            <span class="name">moofmi</span> <span class="star">★</span> <span class="pos">100% positive</span> · (218)<br>
+            <span class="label" style="text-transform:none;">Member since 2026 · Salt Lake / New York</span>
+            <div class="links">
+              <a href="#">See other items</a>
+              <a href="#">Ask a question</a>
+              <a href="#">Add to favorite sellers</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- right: detail -->
+      <div>
+        <h1 class="item-title">Quiet Hour</h1>
+        <div class="item-sub">
+          <span class="chip accent">Aura · Stillness / Interior</span>
+          <span class="chip">Lot 03 of 09</span>
+          <span class="chip">1 of 1 · no reprints</span>
+        </div>
+
+        <!-- bid panel -->
+        <div class="bidpanel">
+          <div class="top">
+            <div class="stat">
+              <span class="label">Current bid</span>
+              <span class="v price">$<span id="current-bid">115</span></span>
+            </div>
+            <div class="stat">
+              <span class="label">Time left</span>
+              <span class="v time" id="timer">—</span>
+            </div>
+            <div class="stat">
+              <span class="label">Opening bid</span>
+              <span class="v">$40</span>
+            </div>
+            <div class="stat">
+              <span class="label">Bids · Bidders</span>
+              <span class="v"><a href="#hist"><span id="bidcount">7</span> bids</a> · <span id="bidders">5</span></span>
+            </div>
+          </div>
+
+          <div class="bidform">
+            <div class="quick">
+              <button data-add="0" id="q-min">$<span class="qm">130</span> · min</button>
+              <button data-add="20">+ $35</button>
+              <button data-add="70">+ $85</button>
+            </div>
+            <div class="entry">
+              <div class="field"><span class="cur">$</span><input type="number" id="bid-input" inputmode="numeric" /></div>
+              <button class="btn place" id="place-bid">Place bid</button>
+            </div>
+            <div class="hint" id="bid-hint">Enter $<span id="min-next">130</span> or more · bids rise in $15</div>
+            <button class="btn ghost" id="watch-btn">♡ Add to watchlist · 142 watching</button>
+          </div>
+        </div>
+
+        <!-- item specifics -->
+        <div class="section">
+          <div class="hd">Item specifics</div>
+          <table class="specs">
+            <tr><td class="k">Materials</td><td>14K gold-fill, hand-set moonstone, freshwater pearl</td></tr>
+            <tr><td class="k">Dimensions</td><td>Pendant 22mm · Chain 18″</td></tr>
+            <tr><td class="k">Edition</td><td>1 of 1 · singular work, no reprints</td></tr>
+            <tr><td class="k">Provenance</td><td>Conceived during the second hour of dawn, March 2026</td></tr>
+            <tr><td class="k">Shipping</td><td>$4.50 · USPS First Class · ships to United States</td></tr>
+            <tr><td class="k">Authenticity</td><td>Numbered certificate + gallery display card &amp; pouch included</td></tr>
+          </table>
+        </div>
+
+        <!-- description -->
+        <div class="section">
+          <div class="hd">Description</div>
+          <div class="desc">
+            <div class="statement">"Made in the second hour of dawn, when the house is still asleep and the noise hasn't arrived yet. A piece for keeping that hour close."</div>
+            Each charm is begun during an emotional state worth keeping — not designed for a market, drawn for a feeling. The hour, the room, and the weather are documented as it's made, and that record travels with the piece. Quiet Hour is a singular work: once it's won, it will not be made again.
+          </div>
+        </div>
+
+        <!-- bid history -->
+        <div class="section" id="hist">
+          <div class="hd">Bid history</div>
+          <table class="hist" id="history-table">
+            <tr><th>Bidder</th><th>Location</th><th style="text-align:right;">Amount</th><th>When</th></tr>
+            <tr><td>collector_4f</td><td>NY</td><td class="amt">$115</td><td>Jun 12, 6:40p</td></tr>
+            <tr><td>m_rivera</td><td>UT</td><td class="amt">$100</td><td>Jun 12, 2:02p</td></tr>
+            <tr><td>collector_4f</td><td>NY</td><td class="amt">$85</td><td>Jun 11, 9:15p</td></tr>
+            <tr><td>quiet.bird</td><td>CA</td><td class="amt">$70</td><td>Jun 11, 9:48a</td></tr>
+            <tr><td>opening</td><td>—</td><td class="amt">$40</td><td>Jun 10, 9:00p</td></tr>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div></div>
+
+  <!-- footer -->
+  <footer><div class="wrap">
+    <div class="flinks">
+      <a href="homepage.html">Home</a><a href="collection-grid.html">Current Sale</a><a href="#">How bidding works</a><a href="#">Commission</a><a href="#">Shipping</a><a href="#">Contact</a>
+    </div>
+    <div class="copy">© 2026 mood of mine (moofmi) · all works original · finally seen. just like me.</div>
+  </div></footer>
+
+<script>
+  const INCREMENT = 15;
+  let currentBid = 115, bidders = 5, bidCount = 7;
+  const closeTime = new Date("2026-06-14T21:00:00-06:00");
+  const $ = (id) => document.getElementById(id);
+  const minNext = () => currentBid + INCREMENT;
+
+  function render() {
+    $("current-bid").textContent = currentBid;
+    $("min-next").textContent = minNext();
+    $("bidders").textContent = bidders;
+    $("bidcount").textContent = bidCount;
+    $("bid-input").value = minNext();
+    $("bid-input").min = minNext();
+    document.querySelector(".qm").textContent = minNext();
+    const q = document.querySelectorAll(".quick button");
+    q[1].textContent = "+ $35"; q[2].textContent = "+ $85";
+    q[1].dataset.add = 20; q[2].dataset.add = 70;
+  }
+  function setHint(msg, cls) { const h = $("bid-hint"); h.innerHTML = msg; h.className = "hint" + (cls ? " " + cls : ""); }
+
+  function placeBid() {
+    const val = parseInt($("bid-input").value, 10);
+    if (isNaN(val)) { setHint("Enter a bid amount", "error"); return; }
+    if (val < minNext()) { setHint("Bid must be at least $" + minNext(), "error"); return; }
+    currentBid = val; bidCount++; bidders++;
+    const row = $("history-table").insertRow(1);
+    row.className = "new";
+    row.innerHTML = '<td><b>you</b></td><td>UT</td><td class="amt">$' + val + '</td><td>just now</td>';
+    render();
+    setHint("You’re the high bidder · $" + val, "ok");
+  }
+
+  document.querySelectorAll(".quick button").forEach((b) => b.addEventListener("click", () => {
+    $("bid-input").value = minNext() + parseInt(b.dataset.add, 10);
+    setHint("Enter $" + minNext() + " or more · bids rise in $15");
+  }));
+  $("place-bid").addEventListener("click", placeBid);
+  $("bid-input").addEventListener("keydown", (e) => { if (e.key === "Enter") placeBid(); });
+
+  let watching = false;
+  $("watch-btn").addEventListener("click", () => {
+    watching = !watching;
+    $("watch-btn").textContent = watching ? "♥ On your watchlist · 143 watching" : "♡ Add to watchlist · 142 watching";
+  });
+
+  function tick() {
+    let diff = Math.floor((closeTime - new Date()) / 1000);
+    const t = $("timer");
+    if (diff <= 0) { t.textContent = "Auction ended"; t.classList.add("urgent"); $("place-bid").disabled = true; return; }
+    const d = Math.floor(diff/86400); diff-=d*86400;
+    const h = Math.floor(diff/3600); diff-=h*3600;
+    const m = Math.floor(diff/60); const s = diff-m*60;
+    const pad = (n)=>String(n).padStart(2,"0");
+    t.textContent = (d>0?d+"d ":"") + pad(h)+"h "+pad(m)+"m "+pad(s)+"s";
+    t.classList.toggle("urgent", d===0 && h<1);
+  }
+  render(); tick(); setInterval(tick, 1000);
+</script>
+</body>
+</html>

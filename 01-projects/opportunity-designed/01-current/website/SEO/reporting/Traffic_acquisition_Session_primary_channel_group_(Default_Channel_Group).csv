@@ -1,0 +1,16 @@
+# ----------------------------------------
+# Traffic acquisition: Session primary channel group (Default Channel Group)
+# Account: adelitaodm
+# Property: opportunity designed
+# ----------------------------------------
+# 
+# All Users
+# Start date: 20260726
+# End date: 20260728
+Session primary channel group (Default Channel Group),City,Sessions,Engaged sessions,Engagement rate,Average engagement time per session,Events per session,Event count,Key events,Session key event rate,Total revenue
+Direct,Vienna,3,0,0,0,3.3333333333333335,10,0,0,0
+Direct,Salt Lake City,3,3,1,24.333333333333332,14,42,0,0,0
+Referral,Salt Lake City,6,4,0.6666666666666666,16.666666666666668,5.333333333333333,32,0,0,0
+Direct,Paris,1,0,0,3,5,5,0,0,0
+Direct,(not set),16,0,0,0.375,3.25,52,0,0,0
+Paid Search,(not set),8,0,0,0,3,24,0,0,0

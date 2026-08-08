@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mood of mine — a digital gallery & auction house</title>
+<style>
+  :root{
+    --ink:#0a0a0a;
+    --paper:#ffffff;
+    --wall:#f4f3f1;       /* gallery wall off-white */
+    --line:#0a0a0a;
+    --mute:#6f6c68;
+    --hair:#e3e1dd;
+    --serif:"Times New Roman", Times, Georgia, serif;
+    --grot:"Helvetica Neue", Arial, sans-serif;
+    --mono:"Courier New", "Courier", monospace;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--grot);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+  a{color:inherit;text-decoration:none;}
+  img{max-width:100%;display:block;}
+
+  /* ---------- vintage-web top strip ---------- */
+  .strip{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    display:flex;
+    justify-content:center;
+    gap:2.2em;
+    padding:7px 12px;
+    white-space:nowrap;
+    overflow:hidden;
+  }
+  .strip span{opacity:.85;}
+  .strip .dot{opacity:.4;}
+
+  /* ---------- header / nav ---------- */
+  header{
+    position:sticky;top:0;z-index:50;
+    background:var(--paper);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{
+    max-width:1180px;margin:0 auto;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 28px;
+  }
+  .wordmark{
+    font-family:var(--serif);
+    font-size:23px;
+    letter-spacing:.02em;
+    font-weight:400;
+    display:flex;align-items:baseline;gap:.5em;
+  }
+  .wordmark b{font-weight:400;}
+  .wordmark .reg{
+    font-family:var(--mono);
+    font-size:10px;letter-spacing:.1em;
+    vertical-align:super;color:var(--mute);
+  }
+  nav.links{display:flex;gap:30px;font-family:var(--mono);
+    font-size:12px;letter-spacing:.16em;text-transform:uppercase;}
+  nav.links a{padding-bottom:3px;border-bottom:1px solid transparent;cursor:pointer;}
+  nav.links a:hover,nav.links a.active{border-bottom:1px solid var(--ink);}
+  .menu-btn{display:none;font-family:var(--mono);font-size:12px;letter-spacing:.16em;
+    background:none;border:1px solid var(--ink);padding:8px 12px;cursor:pointer;text-transform:uppercase;}
+
+  /* ---------- page system ---------- */
+  .page{display:none;}
+  .page.show{display:block;animation:fade .5s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
+
+  /* ---------- hero ---------- */
+  .hero{
+    border-bottom:1px solid var(--line);
+    padding:90px 0 70px;
+    text-align:center;
+    background:
+      linear-gradient(var(--paper),var(--paper)) padding-box;
+  }
+  .hero .kicker{
+    font-family:var(--mono);font-size:11px;letter-spacing:.32em;
+    text-transform:uppercase;color:var(--mute);margin-bottom:34px;
+  }
+  .hero h1{
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(40px,8vw,92px);
+    line-height:.98;
+    letter-spacing:-.01em;
+    margin:0 0 26px;
+  }
+  .hero h1 em{font-style:italic;}
+  .hero .sub{
+    max-width:560px;margin:0 auto 40px;
+    color:var(--mute);font-size:15px;line-height:1.7;
+  }
+  .btn{
+    display:inline-block;
+    font-family:var(--mono);font-size:12px;letter-spacing:.2em;
+    text-transform:uppercase;
+    border:1px solid var(--ink);
+    padding:14px 30px;cursor:pointer;background:var(--paper);
+    transition:background .2s,color .2s;
+  }
+  .btn:hover{background:var(--ink);color:var(--paper);}
+  .btn.solid{background:var(--ink);color:var(--paper);}
+  .btn.solid:hover{background:var(--paper);color:var(--ink);}
+
+  /* ---------- section label (museum placard) ---------- */
+  .placard{
+    display:flex;align-items:baseline;justify-content:space-between;
+    border-bottom:1px solid var(--line);
+    padding:60px 0 16px;margin-bottom:46px;
+  }
+  .placard h2{
+    font-family:var(--serif);font-weight:400;
+    font-size:clamp(24px,3.4vw,38px);margin:0;letter-spacing:-.01em;
+  }
+  .placard .meta{font-family:var(--mono);font-size:11px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--mute);}
+
+  /* ---------- gallery grid ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:1px;
+    background:var(--hair);
+    border:1px solid var(--hair);
+    margin-bottom:30px;
+  }
+  .frame{
+    background:var(--wall);
+    padding:46px 38px 30px;
+    cursor:pointer;
+    position:relative;
+    transition:background .25s;
+  }
+  .frame:hover{background:#eceae6;}
+  .shadowbox{
+    background:var(--paper);
+    aspect-ratio:1/1;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 18px 40px -22px rgba(0,0,0,.55),0 2px 0 rgba(0,0,0,.05);
+    margin-bottom:22px;
+    transition:transform .35s ease;
+  }
+  .frame:hover .shadowbox{transform:translateY(-6px);}
+  .shadowbox svg{width:64%;height:64%;}
+  .label{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .label .t{font-family:var(--serif);font-size:18px;font-style:italic;}
+  .label .n{font-family:var(--mono);font-size:11px;color:var(--mute);letter-spacing:.1em;text-align:right;white-space:nowrap;}
+  .frame .aura{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--mute);margin-top:7px;}
+  .frame .status{
+    position:absolute;top:18px;left:18px;
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+    background:var(--ink);color:var(--paper);padding:4px 8px;
+  }
+  .frame .status.closed{background:none;color:var(--mute);border:1px solid var(--hair);}
+
+  /* ---------- manifesto band ---------- */
+  .band{border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+    padding:70px 0;margin-top:80px;}
+  .band .q{
+    font-family:var(--serif);font-size:clamp(22px,3.2vw,34px);
+    line-height:1.35;max-width:820px;margin:0 auto;text-align:center;font-style:italic;
+  }
+  .band .by{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--mute);text-align:center;margin-top:30px;}
+
+  /* ---------- values row ---------- */
+  .values{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--hair);
+    border:1px solid var(--hair);margin:70px 0;}
+  .val{background:var(--paper);padding:34px 26px;}
+  .val .i{font-family:var(--serif);font-size:30px;}
+  .val h4{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;margin:16px 0 8px;}
+  .val p{font-size:13px;color:var(--mute);margin:0;line-height:1.6;}
+
+  /* ---------- how it works ---------- */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:36px;margin:46px 0 10px;}
+  .step .num{font-family:var(--serif);font-size:46px;line-height:1;}
+  .step h4{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;margin:14px 0 8px;}
+  .step p{font-size:13.5px;color:var(--mute);margin:0;line-height:1.65;}
+
+  /* ---------- AUCTION PAGE ---------- */
+  .auction{display:grid;grid-template-columns:1.1fr .9fr;gap:0;border:1px solid var(--line);margin-top:46px;}
+  .auction .left{border-right:1px solid var(--line);padding:46px;background:var(--wall);}
+  .auction .stage{
+    background:var(--paper);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 24px 55px -28px rgba(0,0,0,.6);margin-bottom:24px;
+  }
+  .auction .stage svg{width:60%;height:60%;}
+  .auction .thumbs{display:flex;gap:1px;background:var(--hair);border:1px solid var(--hair);}
+  .auction .thumbs div{background:var(--paper);flex:1;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .auction .thumbs svg{width:54%;height:54%;}
+  .auction .right{padding:46px;}
+  .auction .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);}
+  .auction h2{font-family:var(--serif);font-weight:400;font-style:italic;font-size:40px;margin:10px 0 4px;}
+  .auction .edition{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--mute);text-transform:uppercase;}
+  .timer{
+    border:1px solid var(--line);margin:30px 0;display:flex;text-align:center;font-family:var(--mono);
+  }
+  .timer div{flex:1;padding:16px 8px;border-right:1px solid var(--hair);}
+  .timer div:last-child{border-right:none;}
+  .timer .big{font-size:30px;letter-spacing:.05em;}
+  .timer .lab{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-top:4px;}
+  .bidnow{display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:18px;}
+  .bidnow .cur{font-family:var(--serif);font-size:44px;}
+  .bidnow .cnt{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);}
+  .bidform{display:flex;gap:10px;margin:24px 0 10px;}
+  .bidform input{flex:1;font-family:var(--mono);font-size:16px;padding:14px;border:1px solid var(--line);background:var(--paper);}
+  .bidform input:focus{outline:1px solid var(--ink);}
+  .hint{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--mute);}
+  .history{margin-top:34px;border-top:1px solid var(--line);}
+  .history h5{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;margin:18px 0 10px;color:var(--mute);}
+  .history table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;}
+  .history td{padding:8px 0;border-bottom:1px solid var(--hair);}
+  .history td:last-child{text-align:right;}
+  .history .me{color:var(--ink);font-weight:700;}
+
+  /* ---------- DETAIL PAGE ---------- */
+  .detail{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);margin-top:46px;}
+  .detail .img{background:var(--wall);padding:64px;border-right:1px solid var(--line);display:flex;align-items:center;justify-content:center;}
+  .detail .box{background:var(--paper);width:100%;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;box-shadow:0 26px 60px -30px rgba(0,0,0,.6);}
+  .detail .box svg{width:60%;height:60%;}
+  .detail .info{padding:54px 48px;}
+  .detail h2{font-family:var(--serif);font-weight:400;font-style:italic;font-size:42px;margin:6px 0 4px;}
+  .detail .story{font-size:14.5px;line-height:1.8;color:#262420;margin:26px 0;}
+  .spec{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;margin:26px 0;}
+  .spec td{padding:11px 0;border-bottom:1px solid var(--hair);letter-spacing:.04em;}
+  .spec td:first-child{color:var(--mute);text-transform:uppercase;letter-spacing:.12em;width:42%;}
+  .cert{border:1px solid var(--line);padding:24px;margin-top:30px;font-family:var(--mono);}
+  .cert .seal{display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--hair);padding-bottom:14px;margin-bottom:14px;}
+  .cert .seal .ring{width:42px;height:42px;border:1px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;}
+  .cert .seal b{font-size:11px;letter-spacing:.16em;text-transform:uppercase;}
+  .cert p{font-size:11px;color:var(--mute);margin:4px 0;letter-spacing:.04em;}
+
+  /* ---------- ABOUT ---------- */
+  .manifesto{max-width:760px;margin:0 auto;padding:30px 0 0;}
+  .manifesto .lead{font-family:var(--serif);font-size:clamp(24px,3.6vw,40px);line-height:1.3;margin:0 0 40px;font-style:italic;}
+  .manifesto p{font-size:15px;line-height:1.85;color:#262420;margin:0 0 22px;}
+  .manifesto h3{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;margin:50px 0 18px;color:var(--mute);border-top:1px solid var(--line);padding-top:24px;}
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--line);margin-top:90px;padding:54px 0 40px;}
+  .fcols{display:flex;justify-content:space-between;flex-wrap:wrap;gap:30px;}
+  .fcols .col h6{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin:0 0 14px;}
+  .fcols .col a{display:block;font-size:13px;padding:4px 0;cursor:pointer;}
+  .fcols .brand .wordmark{font-size:26px;}
+  .fcols .brand p{font-size:12px;color:var(--mute);max-width:240px;margin-top:14px;line-height:1.7;}
+  .signoff{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);
+    border-top:1px solid var(--hair);margin-top:44px;padding-top:22px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+
+  /* ---------- toast ---------- */
+  #toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(120%);
+    background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:12px;letter-spacing:.1em;
+    padding:14px 22px;transition:transform .35s ease;z-index:200;}
+  #toast.show{transform:translateX(-50%) translateY(0);}
+
+  /* ---------- responsive ---------- */
+  @media(max-width:880px){
+    nav.links{display:none;}
+    .menu-btn{display:block;}
+    nav.links.open{display:flex;position:absolute;top:100%;left:0;right:0;background:var(--paper);
+      flex-direction:column;gap:0;border-bottom:1px solid var(--line);}
+    nav.links.open a{padding:16px 28px;border-bottom:1px solid var(--hair);}
+    .grid{grid-template-columns:repeat(2,1fr);}
+    .values{grid-template-columns:repeat(2,1fr);}
+    .steps{grid-template-columns:1fr;gap:30px;}
+    .auction,.detail{grid-template-columns:1fr;}
+    .auction .left{border-right:none;border-bottom:1px solid var(--line);}
+    .detail .img{border-right:none;border-bottom:1px solid var(--line);padding:40px;}
+  }
+  @media(max-width:540px){
+    .grid{grid-template-columns:1fr;}
+    .values{grid-template-columns:1fr;}
+    .strip{gap:1.1em;font-size:10px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="strip">
+  <span>EST. 2026</span><span class="dot">/</span>
+  <span>NO MASS PRODUCTION</span><span class="dot">/</span>
+  <span>LIMITED EDITIONS &amp; ONE-OF-A-KIND</span><span class="dot">/</span>
+  <span>SOLD BY AUCTION</span>
+</div>
+
+<header>
+  <div class="nav">
+    <div class="wordmark" onclick="go('home')" style="cursor:pointer">
+      <b>mood of mine</b><span class="reg">™</span>
+    </div>
+    <nav class="links" id="navlinks">
+      <a onclick="go('home')" data-r="home">Gallery</a>
+      <a onclick="go('auction')" data-r="auction">Live Auction</a>
+      <a onclick="go('detail')" data-r="detail">The Piece</a>
+      <a onclick="go('about')" data-r="about">Manifesto</a>
+    </nav>
+    <button class="menu-btn" onclick="document.getElementById('navlinks').classList.toggle('open')">Menu</button>
+  </div>
+</header>
+
+<!-- ============ HOME / GALLERY ============ -->
+<section class="page show" id="home">
+  <div class="hero">
+    <div class="kicker">A Digital Gallery &amp; Auction House · Capsule No. 001 — "Quiet Static"</div>
+    <h1>finally seen.<br><em>just like me</em></h1>
+    <p class="sub">Wearable art, never mass produced. Each charm is a fragment of the artist's soul — chosen by a collector for its meaning, its sentiment, its aura — and carried forward as an evolving work whose value deepens over a life.</p>
+    <div>
+      <span class="btn solid" onclick="go('auction')">Enter the live auction</span>
+      &nbsp;
+      <span class="btn" onclick="go('about')">Read the manifesto</span>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="placard">
+      <h2>Capsule 001 — "Quiet Static"</h2>
+      <div class="meta">9 Works · On the wall · Bidding open</div>
+    </div>
+    <div class="grid" id="galleryGrid"></div>
+    <p style="font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--mute);text-align:center;text-transform:uppercase;margin:6px 0 0;">
+      Capsule closes when the wall sells out — historically under one week.
+    </p>
+  </div>
+
+  <div class="band">
+    <div class="wrap">
+      <p class="q">"This is not a product to be owned, but an evolving work whose sentimental and energetic value is shaped by the wearer's life."</p>
+      <div class="by">— The mission of mood of mine</div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="placard"><h2>Buying, as a quiet ritual</h2><div class="meta">How the house works</div></div>
+    <div class="steps">
+      <div class="step"><div class="num">01</div><h4>The drop</h4><p>A small, tightly curated capsule appears on the wall — eight to ten pieces, each a one-of-a-kind or limited run. No restocks. No second chances.</p></div>
+      <div class="step"><div class="num">02</div><h4>The bid</h4><p>Every piece opens at $20, $40, or $60 — art for the people. Collectors set the value through competitive bidding, the way a gallery lets demand speak.</p></div>
+      <div class="step"><div class="num">03</div><h4>The provenance</h4><p>The winning collector receives the piece with a numbered certificate of authenticity — edition number, creation story, and artist statement — its story now joined to theirs.</p></div>
+    </div>
+
+    <div class="values">
+      <div class="val"><div class="i">✶</div><h4>Authenticity</h4><p>Deliberately imperfect, emotionally raw, made during real states of feeling.</p></div>
+      <div class="val"><div class="i">◷</div><h4>Intentionality</h4><p>Bought with purpose, not impulse. An act of appreciation, not consumption.</p></div>
+      <div class="val"><div class="i">❍</div><h4>Aura</h4><p>Each design channels a specific energy, emotion, or intention — a wearable talisman.</p></div>
+      <div class="val"><div class="i">◆</div><h4>Exclusivity</h4><p>Zero mass production. Intentional scarcity. If it isn't for you, that's okay.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ AUCTION ============ -->
+<section class="page" id="auction">
+  <div class="wrap">
+    <div class="placard"><h2>Live Auction</h2><div class="meta">Lot 004 of 9 · Capsule 001 · Bidding open</div></div>
+    <div class="auction">
+      <div class="left">
+        <div class="stage" id="auctionStage"></div>
+        <div class="thumbs" id="auctionThumbs"></div>
+      </div>
+      <div class="right">
+        <div class="eyebrow">Lot 004 · One of one</div>
+        <h2>Tender Interference</h2>
+        <div class="edition">Aura — held composure · Brass, freshwater pearl, found glass</div>
+
+        <div class="timer">
+          <div><div class="big" id="t-h">00</div><div class="lab">Hours</div></div>
+          <div><div class="big" id="t-m">00</div><div class="lab">Minutes</div></div>
+          <div><div class="big" id="t-s">00</div><div class="lab">Seconds</div></div>
+        </div>
+
+        <div class="bidnow">
+          <div><div class="cur" id="curBid">$95</div><div class="hint">Current high bid · opened at $40</div></div>
+          <div class="cnt" id="bidCount">14 bids · 9 collectors</div>
+        </div>
+
+        <div class="bidform">
+          <input id="bidInput" type="number" placeholder="$110 or more" />
+          <span class="btn solid" onclick="placeBid()">Place bid</span>
+        </div>
+        <div class="hint">Next bid must be at least <b id="minBid">$110</b>. Bids rise ~$15 as momentum builds. The vintage usability of eBay; the patience of Sotheby's.</div>
+
+        <div class="history">
+          <h5>Bid history</h5>
+          <table id="histTable">
+            <tr><td>collector_marguerite</td><td>$95</td></tr>
+            <tr><td>aura_hunter</td><td>$80</td></tr>
+            <tr><td>quietstatic</td><td>$65</td></tr>
+            <tr><td>collector_marguerite</td><td>$52</td></tr>
+            <tr><td>first.light</td><td>$40</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="placard" style="margin-top:70px"><h2>Also on the block</h2><div class="meta">Closing soon</div></div>
+    <div class="grid" id="auctionGrid"></div>
+  </div>
+</section>
+
+<!-- ============ DETAIL ============ -->
+<section class="page" id="detail">
+  <div class="wrap">
+    <div class="placard"><h2>The Piece</h2><div class="meta">Lot 004 · Capsule 001 · One of one</div></div>
+    <div class="detail">
+      <div class="img"><div class="box" id="detailBox"></div></div>
+      <div class="info">
+        <div class="eyebrow" style="font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute)">Aura — held composure</div>
+        <h2>Tender Interference</h2>
+        <p class="story">
+          Made on a grey afternoon that refused to resolve. A pearl held off-center by a length of brass that won't quite close — composure with a hairline crack running through it. For the collector who keeps it together in public and lets the static in only when no one's looking. Wear it on the days you are quietly holding the line.
+        </p>
+        <table class="spec">
+          <tr><td>Edition</td><td>1 of 1 — singular</td></tr>
+          <tr><td>Materials</td><td>Brass, freshwater pearl, found glass</td></tr>
+          <tr><td>Aura</td><td>Held composure · steadiness</td></tr>
+          <tr><td>Capsule</td><td>001 — "Quiet Static"</td></tr>
+          <tr><td>Opening bid</td><td>$40</td></tr>
+          <tr><td>Format</td><td>Time-limited auction</td></tr>
+        </table>
+        <span class="btn solid" onclick="go('auction')">Bid on this piece</span>
+
+        <div class="cert">
+          <div class="seal">
+            <div class="ring">m</div>
+            <div><b>Certificate of Authenticity</b><br><span style="font-size:10px;color:var(--mute);letter-spacing:.1em">No. 001·004 — issued at sale</span></div>
+          </div>
+          <p>Hand-made and personally inspected by the founder.</p>
+          <p>Accompanied by its creation story &amp; artist statement.</p>
+          <p>Provenance recorded in the house catalogue — this piece, and every owner it travels to, kept on the record.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT / MANIFESTO ============ -->
+<section class="page" id="about">
+  <div class="wrap">
+    <div class="placard"><h2>Manifesto</h2><div class="meta">finally seen. just like me.</div></div>
+    <div class="manifesto">
+      <p class="lead">A jewelry house that treats each piece as genuine, wearable art — shared between an artist and a collector, and carried forward as part of a life.</p>
+      <p>We make jewelry the way a gallery makes a show. There is no mass production here — only limited editions and one-of-a-kind creations, each a fragment of the artist's soul, deliberately imperfect and emotionally raw. Every design channels a specific aura: an emotion, an energy, an intention. When a collector chooses a piece, they aren't buying an object. They're accepting a gift of faith for their own journey.</p>
+      <p>The whole site is stripped of unnecessary branding — no branding as branding — so the art and its aura command full attention. Stark black and white, museum-wall spacing, a little vintage-web nostalgia. Everything sells by auction, because a community of collectors should set the value of art, not a price tag.</p>
+
+      <h3>What we believe</h3>
+      <p>Modern people are tired of generic consumerism. They want goods with meaning, made with intention, tied to memory and milestone and the version of themselves they're becoming. Traditional jewelry overlooks all of it. We exist for the modern thinker who lives authentically regardless of social pressure — and who would rather own one piece that means everything than ten that mean nothing.</p>
+
+      <h3>The "cool girl" stance</h3>
+      <p>These are handmade one-of-a-kinds and minimal runs. We stand behind the small assortment — quality and concept over quantity. If a piece isn't for you, that's okay. We made it true; take it or leave it. That confidence is the brand.</p>
+
+      <h3>Values</h3>
+      <p>Authenticity · artistry · intentionality · emotional resonance · creativity · kindness · exclusivity.</p>
+
+      <div style="text-align:center;margin:50px 0 10px">
+        <span class="btn solid" onclick="go('home')">See the wall</span>
+        &nbsp;<span class="btn" onclick="go('auction')">Enter the auction</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap">
+    <div class="fcols">
+      <div class="col brand">
+        <div class="wordmark"><b>mood of mine</b><span class="reg">™</span></div>
+        <p>A digital gallery &amp; auction house for art-driven jewelry. Limited editions and one-of-a-kind creations, sold by auction. Never mass produced.</p>
+      </div>
+      <div class="col">
+        <h6>The House</h6>
+        <a onclick="go('home')">Gallery</a>
+        <a onclick="go('auction')">Live Auction</a>
+        <a onclick="go('detail')">The Piece</a>
+        <a onclick="go('about')">Manifesto</a>
+      </div>
+      <div class="col">
+        <h6>Collectors</h6>
+        <a onclick="toast('VIP early-access — coming with Capsule 001')">VIP early access</a>
+        <a onclick="toast('Private viewings — invitations only')">Private viewings</a>
+        <a onclick="toast('Provenance catalogue — building now')">Provenance catalogue</a>
+        <a onclick="toast('Certificates issued at sale')">Certificates</a>
+      </div>
+      <div class="col">
+        <h6>Newsletter</h6>
+        <p style="font-size:12px;color:var(--mute);margin:0 0 12px;max-width:200px">Be first to the wall. No noise — only drop notices.</p>
+        <div class="bidform" style="margin:0">
+          <input type="email" placeholder="you@email.com" style="font-size:13px;padding:11px"/>
+          <span class="btn solid" style="padding:11px 16px" onclick="toast('You\'re on the list. Welcome.')">Join</span>
+        </div>
+      </div>
+    </div>
+    <div class="signoff">
+      <span>© 2026 mood of mine — finally seen. just like me.</span>
+      <span>Black &amp; white · no mass production · sold by auction</span>
+    </div>
+  </div>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+/* ---------- minimal SVG "pieces" : abstract charms, gallery-style ---------- */
+function charm(i){
+  const stroke="#0a0a0a";
+  const arts=[
+    `<circle cx="50" cy="36" r="15" fill="none" stroke="${stroke}" stroke-width="1.4"/><line x1="50" y1="51" x2="50" y2="86" stroke="${stroke}" stroke-width="1.4"/><circle cx="50" cy="86" r="4" fill="${stroke}"/>`,
+    `<rect x="34" y="30" width="32" height="32" fill="none" stroke="${stroke}" stroke-width="1.4"/><circle cx="50" cy="46" r="6" fill="${stroke}"/><line x1="50" y1="62" x2="50" y2="84" stroke="${stroke}" stroke-width="1.4"/>`,
+    `<path d="M50 24 L66 50 L50 76 L34 50 Z" fill="none" stroke="${stroke}" stroke-width="1.4"/><circle cx="50" cy="50" r="4" fill="${stroke}"/>`,
+    `<circle cx="50" cy="50" r="22" fill="none" stroke="${stroke}" stroke-width="1.4"/><circle cx="50" cy="50" r="10" fill="none" stroke="${stroke}" stroke-width="1.4"/><circle cx="50" cy="28" r="3" fill="${stroke}"/>`,
+    `<path d="M30 60 Q50 18 70 60" fill="none" stroke="${stroke}" stroke-width="1.4"/><circle cx="50" cy="68" r="6" fill="${stroke}"/>`,
+    `<line x1="50" y1="22" x2="50" y2="60" stroke="${stroke}" stroke-width="1.4"/><circle cx="50" cy="68" r="11" fill="none" stroke="${stroke}" stroke-width="1.4"/><circle cx="50" cy="68" r="3" fill="${stroke}"/>`,
+    `<rect x="38" y="38" width="24" height="24" transform="rotate(45 50 50)" fill="none" stroke="${stroke}" stroke-width="1.4"/><line x1="50" y1="20" x2="50" y2="30" stroke="${stroke}" stroke-width="1.4"/>`,
+    `<circle cx="42" cy="46" r="9" fill="none" stroke="${stroke}" stroke-width="1.4"/><circle cx="58" cy="46" r="9" fill="none" stroke="${stroke}" stroke-width="1.4"/><line x1="50" y1="55" x2="50" y2="82" stroke="${stroke}" stroke-width="1.4"/>`,
+    `<path d="M50 26 C40 40 40 60 50 78 C60 60 60 40 50 26 Z" fill="none" stroke="${stroke}" stroke-width="1.4"/><circle cx="50" cy="52" r="3" fill="${stroke}"/>`
+  ];
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${arts[i%arts.length]}</svg>`;
+}
+
+const pieces=[
+  {t:"First Light",aura:"new beginnings",ed:"1 of 1",bid:"$72",st:"open"},
+  {t:"Held Breath",aura:"anticipation",ed:"Ed. 2 / 3",bid:"$58",st:"open"},
+  {t:"Soft Refusal",aura:"boundaries",ed:"1 of 1",bid:"$110",st:"open"},
+  {t:"Tender Interference",aura:"held composure",ed:"1 of 1",bid:"$95",st:"open"},
+  {t:"After the Rain",aura:"relief",ed:"Ed. 1 / 2",bid:"$44",st:"open"},
+  {t:"Quiet Static",aura:"overwhelm, gently",ed:"1 of 1",bid:"$130",st:"open"},
+  {t:"Keepsake No. 7",aura:"memory",ed:"1 of 1",bid:"sold",st:"closed"},
+  {t:"Low Hum",aura:"contentment",ed:"Ed. 3 / 3",bid:"sold",st:"closed"},
+  {t:"Almost Said It",aura:"longing",ed:"1 of 1",bid:"$66",st:"open"}
+];
+
+function frameHTML(p,i,clickPage){
+  const status = p.st==="closed"
+    ? `<div class="status closed">Sold</div>`
+    : `<div class="status">Bidding</div>`;
+  return `<div class="frame" onclick="go('${clickPage}')">
+    ${status}
+    <div class="shadowbox">${charm(i)}</div>
+    <div class="label">
+      <div class="t">${p.t}</div>
+      <div class="n">${p.ed}<br>${p.bid}</div>
+    </div>
+    <div class="aura">Aura — ${p.aura}</div>
+  </div>`;
+}
+
+function buildGrids(){
+  document.getElementById('galleryGrid').innerHTML =
+    pieces.map((p,i)=>frameHTML(p,i,i===3?'detail':'auction')).join('');
+  document.getElementById('auctionGrid').innerHTML =
+    pieces.slice(0,6).filter((_,i)=>i!==3).map((p,i)=>frameHTML(p,i,'detail')).join('');
+  // auction stage + thumbs + detail
+  document.getElementById('auctionStage').innerHTML = charm(3);
+  document.getElementById('detailBox').innerHTML = charm(3);
+  document.getElementById('auctionThumbs').innerHTML =
+    [3,5,2,8].map(n=>`<div onclick="document.getElementById('auctionStage').innerHTML=charm(${n})">${charm(n)}</div>`).join('');
+}
+
+/* ---------- routing ---------- */
+function go(r){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('show'));
+  document.getElementById(r).classList.add('show');
+  document.querySelectorAll('nav.links a').forEach(a=>a.classList.toggle('active',a.dataset.r===r));
+  document.getElementById('navlinks').classList.remove('open');
+  window.scrollTo({top:0,behavior:'instant'});
+}
+
+/* ---------- auction logic ---------- */
+let current=95, bids=14, collectors=9;
+function syncBid(){
+  document.getElementById('curBid').textContent='$'+current;
+  document.getElementById('minBid').textContent='$'+(current+15);
+  document.getElementById('bidInput').placeholder='$'+(current+15)+' or more';
+  document.getElementById('bidCount').textContent=bids+' bids · '+collectors+' collectors';
+}
+function placeBid(){
+  const v=parseInt(document.getElementById('bidInput').value,10);
+  const min=current+15;
+  if(!v||v<min){ toast('Minimum next bid is $'+min); return; }
+  current=v; bids++;
+  const tbl=document.getElementById('histTable');
+  const row=tbl.insertRow(0);
+  row.innerHTML='<td class="me">you</td><td class="me">$'+v+'</td>';
+  document.getElementById('bidInput').value='';
+  syncBid();
+  toast('Bid placed — $'+v+'. You hold the lot.');
+}
+
+/* ---------- countdown ---------- */
+let end=Date.now()+ (5*3600+42*60+18)*1000;
+function tick(){
+  let d=Math.max(0,end-Date.now());
+  let h=Math.floor(d/3.6e6), m=Math.floor(d%3.6e6/6e4), s=Math.floor(d%6e4/1e3);
+  document.getElementById('t-h').textContent=String(h).padStart(2,'0');
+  document.getElementById('t-m').textContent=String(m).padStart(2,'0');
+  document.getElementById('t-s').textContent=String(s).padStart(2,'0');
+}
+setInterval(tick,1000);
+
+/* ---------- toast ---------- */
+let toastTimer;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+buildGrids(); syncBid(); tick();
+</script>
+</body>
+</html>
