@@ -8,66 +8,19 @@ import {
 } from "lucide-react";
 import PptxGenJS from "pptxgenjs";
 import * as XLSX from "xlsx";
-import { createClient } from "@supabase/supabase-js";
-
-// ── SUPABASE ───────────────────────────────────────────────────────────────────
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = SUPABASE_URL && SUPABASE_KEY ? createClient(SUPABASE_URL, SUPABASE_KEY) : null;
-
-// Stable anonymous user ID — persists in localStorage as identity only
-function getUserId() {
-  let id = localStorage.getItem("dashboard_user_id");
-  if (!id) { id = crypto.randomUUID(); localStorage.setItem("dashboard_user_id", id); }
-  return id;
-}
-const USER_ID = getUserId();
-
-async function loadFromSupabase() {
-  if (!supabase) return null;
-  try {
-    const { data, error } = await supabase
-      .from("dashboard_state")
-      .select("state")
-      .eq("user_id", USER_ID)
-      .maybeSingle(); // returns null instead of error when no row found
-    if (error) { console.warn("Supabase load error:", error.message); return null; }
-    return data?.state || null;
-  } catch (e) { console.warn("Supabase load failed:", e); return null; }
-}
-
-async function saveToSupabase(state) {
-  if (!supabase) return;
-  try {
-    const { error } = await supabase
-      .from("dashboard_state")
-      .upsert({ user_id: USER_ID, state }, { onConflict: "user_id" });
-    if (error) console.warn("Supabase save error:", error.message);
-  } catch (e) { console.warn("Supabase save failed:", e); }
-}
-
-async function loadConsultantFromSupabase() {
-  if (!supabase) return null;
-  try {
-    const { data, error } = await supabase
-      .from("consultant_settings")
-      .select("settings")
-      .eq("user_id", USER_ID)
-      .maybeSingle(); // returns null instead of error when no row found
-    if (error) { console.warn("Supabase consultant load error:", error.message); return null; }
-    return data?.settings || null;
-  } catch (e) { console.warn("Supabase consultant load failed:", e); return null; }
-}
-
-async function saveConsultantToSupabase(settings) {
-  if (!supabase) return;
-  try {
-    const { error } = await supabase
-      .from("consultant_settings")
-      .upsert({ user_id: USER_ID, settings }, { onConflict: "user_id" });
-    if (error) console.warn("Supabase consultant save error:", error.message);
-  } catch (e) { console.warn("Supabase consultant save failed:", e); }
-}
+import Modal from "./components/Modal";
+import { askClaude } from "./lib/claude";
+import { downloadBlob, projectFileName } from "./lib/download";
+import {
+  blankProject, consultantCredit, doneMilestones, nowStr, openAsks as openAsksOf,
+  openTasks, pct, projectMeta, todayISO, withProjectDefaults,
+} from "./lib/project";
+import { loadUserRow, readJSON, saveUserRow, supabase, writeJSON } from "./lib/storage";
+import {
+  budgetBarClass, budgetBarHex, CONFIDENTIAL_LABEL, RAG_BADGE, RAG_BG, RAG_DOT, RAG_HEX,
+  RAG_OPTIONS, RAG_TEXT, STATUS_BG, STATUS_COLOR, STATUS_OPTIONS, STATUS_TEXT,
+} from "./lib/theme";
+import { useInlineEdit } from "./lib/useInlineEdit";
 
 // ── CONSTANTS ──────────────────────────────────────────────────────────────────
 const STORAGE_KEY = "consulting_dashboard_v3";
@@ -76,17 +29,6 @@ const SETTINGS_KEY = "consultant_settings_v1";
 const DEFAULT_CONSULTANT = {
   name: "Addie", firm: "", logoDataUrl: "",
 };
-
-const blankProject = (id) => ({
-  id, name: "New Project", client: "Client Name", lead: "Addie",
-  status: "Planning", rag: "Green", budget: 0, spent: 0,
-  startDate: "", endDate: "", meetingDate: "", revision: "",
-  confidential: false, clientLogoDataUrl: "",
-  notes: "", execSummary: "", talkingPoints: "",
-  tasks: [], milestones: [], deliverables: [],
-  risks: [], decisions: [], openAsks: [], meetings: [],
-  budgetHistory: [],
-});
 
 const DEFAULT_PANELS = {
   execSummary: true, kpis: true, budget: true, milestones: true,
@@ -100,54 +42,43 @@ const PANEL_LABELS = {
   openAsks: "Open Asks from Client", meetings: "Meeting Log",
   tasks: "Task Table", talkingPoints: "Talking Points",
 };
-const STATUS_COLOR = {
-  "Done": "bg-emerald-100 text-emerald-700", "Complete": "bg-emerald-100 text-emerald-700",
-  "In Progress": "bg-blue-100 text-blue-700", "In Review": "bg-blue-100 text-blue-700",
-  "Not Started": "bg-gray-100 text-gray-500", "Planning": "bg-amber-100 text-amber-700",
-};
-const STATUS_OPTIONS = ["Not Started", "In Progress", "In Review", "Done", "Complete", "Planning"];
-const RAG_DOT = { Green: "bg-emerald-500", Amber: "bg-amber-400", Red: "bg-red-500" };
-const RAG_BADGE = { Green: "text-emerald-700 bg-emerald-50 border-emerald-200", Amber: "text-amber-700 bg-amber-50 border-amber-200", Red: "text-red-700 bg-red-50 border-red-200" };
-const pct = (a, b) => b === 0 ? 0 : Math.min(100, Math.round((a / b) * 100));
-const nowStr = () => new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
-const todayISO = () => new Date().toISOString().slice(0, 10);
 
 // ── PERSISTENCE ────────────────────────────────────────────────────────────────
-function loadState() { try { const s = localStorage.getItem(STORAGE_KEY); return s ? JSON.parse(s) : null; } catch { return null; } }
-function saveState(d) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch {} }
-function loadConsultant() { try { const s = localStorage.getItem(SETTINGS_KEY); return s ? { ...DEFAULT_CONSULTANT, ...JSON.parse(s) } : DEFAULT_CONSULTANT; } catch { return DEFAULT_CONSULTANT; } }
-function saveConsultant(d) { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(d)); } catch {} }
+function loadState() { return readJSON(STORAGE_KEY); }
+function saveState(d) { writeJSON(STORAGE_KEY, d); }
+function loadConsultant() { return { ...DEFAULT_CONSULTANT, ...readJSON(SETTINGS_KEY, {}) }; }
+function saveConsultant(d) { writeJSON(SETTINGS_KEY, d); }
+
+const loadFromSupabase = () => loadUserRow("dashboard_state", "state");
+const saveToSupabase = (state) => saveUserRow("dashboard_state", "state", state);
+const loadConsultantFromSupabase = () => loadUserRow("consultant_settings", "settings");
+const saveConsultantToSupabase = (settings) => saveUserRow("consultant_settings", "settings", settings);
 
 // ── INLINE EDITORS ─────────────────────────────────────────────────────────────
 function IT({ value, onSave, className = "", wide = false, placeholder = "Click to edit", dark = false }) {
-  const [ed, setEd] = useState(false); const [v, setV] = useState(value);
-  const commit = () => { onSave(v); setEd(false); };
-  const cancel = () => { setV(value); setEd(false); };
-  if (ed) return <span className="inline-flex items-center gap-1">
+  const { editing, setEditing, draft, setDraft, commit, cancel, onKeyDown } = useInlineEdit(value, onSave);
+  if (editing) return <span className="inline-flex items-center gap-1">
     <input autoFocus placeholder={placeholder}
       className={`border-b outline-none bg-transparent text-sm px-0.5 ${wide ? "w-56" : "w-36"} ${dark ? "border-gray-400 text-white placeholder-gray-500" : "border-blue-400 text-gray-800"}`}
-      value={v} onChange={e => setV(e.target.value)}
-      onKeyDown={e => { if (e.key === "Enter") commit(); if (e.key === "Escape") cancel(); }} />
+      value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={onKeyDown} />
     <Check className={`w-3.5 h-3.5 cursor-pointer shrink-0 ${dark ? "text-emerald-400" : "text-emerald-500"}`} onClick={commit} />
     <X className="w-3.5 h-3.5 text-gray-400 cursor-pointer shrink-0" onClick={cancel} />
   </span>;
-  return <span className={`group inline-flex items-center gap-1 cursor-pointer ${className}`} onClick={() => setEd(true)}>
+  return <span className={`group inline-flex items-center gap-1 cursor-pointer ${className}`} onClick={() => setEditing(true)}>
     {value || <span className={`italic text-sm ${dark ? "text-gray-500" : "text-gray-300"}`}>{placeholder}</span>}
     <Pencil className={`w-3 h-3 opacity-0 group-hover:opacity-100 shrink-0 ${dark ? "text-gray-400" : "text-gray-300 group-hover:text-gray-400"}`} />
   </span>;
 }
+const parseNumber = (v) => { const n = parseFloat(v); return isNaN(n) ? undefined : n; };
 function IN({ value, onSave, prefix = "" }) {
-  const [ed, setEd] = useState(false); const [v, setV] = useState(value);
-  const commit = () => { const n = parseFloat(v); if (!isNaN(n)) onSave(n); setEd(false); };
-  const cancel = () => { setV(value); setEd(false); };
-  if (ed) return <span className="inline-flex items-center gap-1">
+  const { editing, setEditing, draft, setDraft, commit, cancel, onKeyDown } = useInlineEdit(value, onSave, parseNumber);
+  if (editing) return <span className="inline-flex items-center gap-1">
     <input autoFocus className="border-b border-blue-400 outline-none bg-transparent w-24 text-sm"
-      value={v} onChange={e => setV(e.target.value)}
-      onKeyDown={e => { if (e.key === "Enter") commit(); if (e.key === "Escape") cancel(); }} />
+      value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={onKeyDown} />
     <Check className="w-3.5 h-3.5 text-emerald-500 cursor-pointer" onClick={commit} />
     <X className="w-3.5 h-3.5 text-gray-400 cursor-pointer" onClick={cancel} />
   </span>;
-  return <span className="group inline-flex items-center gap-1 cursor-pointer" onClick={() => setEd(true)}>
+  return <span className="group inline-flex items-center gap-1 cursor-pointer" onClick={() => setEditing(true)}>
     {prefix}{value.toLocaleString()}<Pencil className="w-3 h-3 text-gray-300 group-hover:text-gray-400 opacity-0 group-hover:opacity-100" />
   </span>;
 }
@@ -161,18 +92,18 @@ function IS({ value, options, onSave, colorMap }) {
   return <span className={`px-2 py-0.5 rounded-full text-xs font-medium cursor-pointer border ${cls}`} onClick={() => setEd(true)}>{value}</span>;
 }
 function TA({ value, onSave, rows = 3, placeholder = "Click to add..." }) {
-  const [ed, setEd] = useState(false); const [v, setV] = useState(value);
-  return ed
+  const { editing, setEditing, draft, setDraft, commit, cancel } = useInlineEdit(value, onSave);
+  return editing
     ? <div>
         <textarea autoFocus rows={rows} placeholder={placeholder}
           className="w-full text-sm text-gray-700 border border-blue-200 rounded-lg p-3 outline-none resize-none focus:border-blue-400 font-sans"
-          value={v} onChange={e => setV(e.target.value)} />
+          value={draft} onChange={e => setDraft(e.target.value)} />
         <div className="flex gap-2 mt-1">
-          <button onClick={() => { onSave(v); setEd(false); }} className="flex items-center gap-1 text-xs text-emerald-600 font-medium"><Check className="w-3.5 h-3.5" />Save</button>
-          <button onClick={() => { setV(value); setEd(false); }} className="flex items-center gap-1 text-xs text-gray-400"><X className="w-3.5 h-3.5" />Cancel</button>
+          <button onClick={commit} className="flex items-center gap-1 text-xs text-emerald-600 font-medium"><Check className="w-3.5 h-3.5" />Save</button>
+          <button onClick={cancel} className="flex items-center gap-1 text-xs text-gray-400"><X className="w-3.5 h-3.5" />Cancel</button>
         </div>
       </div>
-    : <div className="group relative cursor-pointer" onClick={() => setEd(true)}>
+    : <div className="group relative cursor-pointer" onClick={() => setEditing(true)}>
         <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap min-h-8">{value || <span className="text-gray-300 italic">{placeholder}</span>}</p>
         <Pencil className="w-3 h-3 text-gray-300 group-hover:text-gray-400 absolute top-0 right-0 opacity-0 group-hover:opacity-100" />
       </div>;
@@ -193,7 +124,7 @@ function Empty({ label }) {
 }
 function BudgetBar({ spent, budget }) {
   const p = pct(spent, budget);
-  const col = p > 90 ? "bg-red-500" : p > 70 ? "bg-amber-400" : "bg-emerald-500";
+  const col = budgetBarClass(p);
   const projected = budget > 0 ? Math.round(spent / Math.max(p, 1) * 100) : 0;
   return <div className="w-full">
     <div className="flex justify-between text-xs text-gray-500 mb-1"><span>${spent.toLocaleString()} spent</span><span>${budget.toLocaleString()} budget</span></div>
@@ -238,7 +169,7 @@ function LogoUploader({ logoDataUrl, onSave, label = "Upload logo", compact = fa
 // ── CONFIDENTIAL BANNER ───────────────────────────────────────────────────────
 function ConfidentialBanner() {
   return <div className="w-full bg-red-600 text-white text-xs font-bold text-center py-1.5 tracking-widest uppercase print:py-1">
-    ⚠ Confidential — Not for Distribution
+    {CONFIDENTIAL_LABEL}
   </div>;
 }
 
@@ -247,12 +178,7 @@ function ConsultantSettings({ consultant, onChange, onClose }) {
   const [local, setLocal] = useState({ ...consultant });
   const save = () => { onChange(local); onClose(); };
   const upd = (k, v) => setLocal(l => ({ ...l, [k]: v }));
-  return <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={onClose}>
-    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="text-base font-semibold text-gray-800 flex items-center gap-2"><Building2 className="w-4 h-4 text-gray-500" />Your Branding</h2>
-        <button onClick={onClose}><X className="w-5 h-5 text-gray-400" /></button>
-      </div>
+  return <Modal title="Your Branding" icon={<Building2 className="w-4 h-4 text-gray-500" />} maxWidth="max-w-sm" headerMargin="mb-5" onClose={onClose}>
       <div className="space-y-4">
         <div>
           <label className="text-xs font-medium text-gray-500 block mb-1">Your Name</label>
@@ -271,8 +197,7 @@ function ConsultantSettings({ consultant, onChange, onClose }) {
         <button onClick={save} className="flex-1 py-2 bg-gray-800 text-white text-sm font-medium rounded-lg hover:bg-gray-700">Save</button>
         <button onClick={onClose} className="px-4 py-2 border border-gray-200 text-gray-600 text-sm rounded-lg hover:border-gray-400">Cancel</button>
       </div>
-    </div>
-  </div>;
+  </Modal>;
 }
 
 // ── TALKING POINTS ─────────────────────────────────────────────────────────────
@@ -282,22 +207,12 @@ function TalkingPointsPanel({ proj, talkingPoints, onSave }) {
   const generate = async () => {
     setLoading(true); setError("");
     try {
-      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-      if (!apiKey) throw new Error("no key");
-      const milDone = proj.milestones.filter(m => m.done).length;
       const openRisks = proj.risks.filter(r => r.flag !== "Green");
-      const openAsks = proj.openAsks.filter(a => !a.done);
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514", max_tokens: 700,
-          system: "You are a consulting engagement manager. Generate concise, confident talking points for presenting a project status dashboard to a client. Return 4-5 bullet points as plain text, each starting with '•'. No headers, no markdown, no preamble.",
-          messages: [{ role: "user", content: `Generate talking points:\nProject: ${proj.name}\nClient: ${proj.client}\nRAG: ${proj.rag}\nSummary: ${proj.execSummary || "Not provided"}\nBudget: $${proj.spent.toLocaleString()} of $${proj.budget.toLocaleString()} (${pct(proj.spent, proj.budget)}%)\nMilestones: ${milDone}/${proj.milestones.length} complete\nOpen Risks: ${openRisks.map(r => r.item).join(", ") || "None"}\nOpen Asks: ${openAsks.map(a => a.ask).join(", ") || "None"}\nFocus: what's going well, what needs client attention, next steps, risks to flag.` }]
-        })
+      const text = await askClaude({
+        system: "You are a consulting engagement manager. Generate concise, confident talking points for presenting a project status dashboard to a client. Return 4-5 bullet points as plain text, each starting with '•'. No headers, no markdown, no preamble.",
+        prompt: `Generate talking points:\nProject: ${proj.name}\nClient: ${proj.client}\nRAG: ${proj.rag}\nSummary: ${proj.execSummary || "Not provided"}\nBudget: $${proj.spent.toLocaleString()} of $${proj.budget.toLocaleString()} (${pct(proj.spent, proj.budget)}%)\nMilestones: ${doneMilestones(proj)}/${proj.milestones.length} complete\nOpen Risks: ${openRisks.map(r => r.item).join(", ") || "None"}\nOpen Asks: ${openAsksOf(proj).map(a => a.ask).join(", ") || "None"}\nFocus: what's going well, what needs client attention, next steps, risks to flag.`,
       });
-      const data = await res.json();
-      onSave(data.content?.find(b => b.type === "text")?.text || "");
+      onSave(text);
     } catch {
       setError("Set VITE_ANTHROPIC_API_KEY in Netlify environment variables to enable AI generation, or type notes manually.");
     }
@@ -316,45 +231,52 @@ function TalkingPointsPanel({ proj, talkingPoints, onSave }) {
 }
 
 // ── EXPORTS ────────────────────────────────────────────────────────────────────
+// One description of every project collection, used by both the CSV and Excel export.
+// `text` marks the columns holding free text, which the CSV export has to quote.
+const SECTIONS = [
+  { title: "TASKS", sheet: "Tasks", header: ["Task", "Owner", "Due", "Status"], text: [0], items: p => p.tasks, row: t => [t.name, t.owner, t.due, t.status] },
+  { title: "MILESTONES", sheet: "Milestones", header: ["Milestone", "Date", "Done"], text: [0], items: p => p.milestones, row: m => [m.name, m.date, m.done ? "Yes" : "No"] },
+  { title: "DELIVERABLES", sheet: "Deliverables", header: ["Deliverable", "Status", "Due"], text: [0], items: p => p.deliverables, row: d => [d.name, d.status, d.due] },
+  { title: "RISKS", sheet: "Risks", header: ["Flag", "Risk", "Owner", "Mitigation"], text: [1, 3], items: p => p.risks, row: r => [r.flag, r.item, r.owner, r.mitigation] },
+  { title: "DECISIONS", sheet: "Decisions", header: ["Date", "Decision", "Made By"], text: [1], items: p => p.decisions, row: d => [d.date, d.decision, d.madeBy] },
+  { title: "OPEN ASKS", sheet: "Open Asks", header: ["Ask", "Asked Of", "Due By", "Done"], text: [0], items: p => p.openAsks, row: a => [a.ask, a.askedOf, a.dueBy, a.done ? "Yes" : "No"] },
+];
+
+const summaryPairs = (proj) => [
+  ["Project", proj.name], ["Client", proj.client], ["Lead", proj.lead],
+  ["RAG", proj.rag], ["Meeting Date", proj.meetingDate], ["Revision", proj.revision],
+  ["Confidential", proj.confidential ? "Yes" : "No"],
+  ["Budget", proj.budget], ["Spent", proj.spent], ["Remaining", proj.budget - proj.spent],
+];
+
 function exportCSV(proj) {
   const q = s => `"${String(s || "").replace(/"/g, '""')}"`;
   const rows = [
-    ["Project", proj.name], ["Client", proj.client], ["Lead", proj.lead],
-    ["RAG", proj.rag], ["Meeting Date", proj.meetingDate], ["Revision", proj.revision],
-    ["Confidential", proj.confidential ? "Yes" : "No"],
-    ["Budget", proj.budget], ["Spent", proj.spent], ["Remaining", proj.budget - proj.spent], [],
+    ...summaryPairs(proj), [],
     ["EXEC SUMMARY"], [q(proj.execSummary)], [],
     ["TALKING POINTS"], [q(proj.talkingPoints)], [],
-    ["TASKS"], ["Task", "Owner", "Due", "Status"], ...proj.tasks.map(t => [q(t.name), t.owner, t.due, t.status]), [],
-    ["MILESTONES"], ["Milestone", "Date", "Done"], ...proj.milestones.map(m => [q(m.name), m.date, m.done ? "Yes" : "No"]), [],
-    ["DELIVERABLES"], ["Deliverable", "Status", "Due"], ...proj.deliverables.map(d => [q(d.name), d.status, d.due]), [],
-    ["RISKS"], ["Flag", "Risk", "Owner", "Mitigation"], ...proj.risks.map(r => [r.flag, q(r.item), r.owner, q(r.mitigation)]), [],
-    ["DECISIONS"], ["Date", "Decision", "Made By"], ...proj.decisions.map(d => [d.date, q(d.decision), d.madeBy]), [],
-    ["OPEN ASKS"], ["Ask", "Asked Of", "Due By", "Done"], ...proj.openAsks.map(a => [q(a.ask), a.askedOf, a.dueBy, a.done ? "Yes" : "No"]),
+    ...SECTIONS.flatMap((sec, i) => [
+      [sec.title], sec.header,
+      ...sec.items(proj).map(item => sec.row(item).map((cell, c) => sec.text.includes(c) ? q(cell) : cell)),
+      ...(i < SECTIONS.length - 1 ? [[]] : []),
+    ]),
   ];
-  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(new Blob([rows.map(r => r.join(",")).join("\n")], { type: "text/csv" })), download: `${proj.client.replace(/\s+/g, "_")}_${proj.name.replace(/\s+/g, "_")}.csv` });
-  a.click();
+  downloadBlob(projectFileName(proj, "csv"), rows.map(r => r.join(",")).join("\n"), "text/csv");
 }
 
 function exportExcel(proj) {
   const wb = XLSX.utils.book_new();
   const add = (name, data) => XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), name);
-  add("Summary", [["Project", proj.name], ["Client", proj.client], ["Lead", proj.lead], ["RAG", proj.rag], ["Meeting Date", proj.meetingDate], ["Revision", proj.revision], ["Confidential", proj.confidential ? "Yes" : "No"], ["Budget", proj.budget], ["Spent", proj.spent], ["Remaining", proj.budget - proj.spent], [], ["Executive Summary"], [proj.execSummary], [], ["Talking Points"], [proj.talkingPoints]]);
-  add("Tasks", [["Task", "Owner", "Due", "Status"], ...proj.tasks.map(t => [t.name, t.owner, t.due, t.status])]);
-  add("Milestones", [["Milestone", "Date", "Done"], ...proj.milestones.map(m => [m.name, m.date, m.done ? "Yes" : "No"])]);
-  add("Deliverables", [["Deliverable", "Status", "Due"], ...proj.deliverables.map(d => [d.name, d.status, d.due])]);
-  add("Risks", [["Flag", "Risk", "Owner", "Mitigation"], ...proj.risks.map(r => [r.flag, r.item, r.owner, r.mitigation])]);
-  add("Decisions", [["Date", "Decision", "Made By"], ...proj.decisions.map(d => [d.date, d.decision, d.madeBy])]);
-  add("Open Asks", [["Ask", "Asked Of", "Due By", "Done"], ...proj.openAsks.map(a => [a.ask, a.askedOf, a.dueBy, a.done ? "Yes" : "No"])]);
-  XLSX.writeFile(wb, `${proj.client.replace(/\s+/g, "_")}_${proj.name.replace(/\s+/g, "_")}.xlsx`);
+  add("Summary", [...summaryPairs(proj), [], ["Executive Summary"], [proj.execSummary], [], ["Talking Points"], [proj.talkingPoints]]);
+  SECTIONS.forEach(sec => add(sec.sheet, [sec.header, ...sec.items(proj).map(item => sec.row(item))]));
+  XLSX.writeFile(wb, projectFileName(proj, "xlsx"));
 }
 
 function exportPPT(proj, updatedAt, consultant) {
   const pptx = new PptxGenJS();
   pptx.layout = "LAYOUT_WIDE";
   const DARK = "1e2a3a", ACCENT = "3b82f6", LIGHT = "f8fafc", GRAY = "64748b", RED = "dc2626";
-  const ragColor = { Green: "10b981", Amber: "f59e0b", Red: "ef4444" };
-  const milDone = proj.milestones.filter(m => m.done).length;
+  const milDone = doneMilestones(proj);
   const budPct = pct(proj.spent, proj.budget);
   const yOff = proj.confidential ? 0.45 : 0;
 
@@ -364,7 +286,7 @@ function exportPPT(proj, updatedAt, consultant) {
     s.addText("CONFIDENTIAL — NOT FOR DISTRIBUTION", { x: 0, y: 0, w: "100%", h: 0.35, fontSize: 9, bold: true, color: "FFFFFF", align: "center" });
   };
   const footerBar = (s) => {
-    s.addText(`${consultant.name}${consultant.firm ? " · " + consultant.firm : ""} · ${updatedAt}${proj.revision ? " · Rev. " + proj.revision : ""}`, { x: 0.5, y: 7.0, w: 12, h: 0.25, fontSize: 8, color: "9ca3af", align: "right" });
+    s.addText(`${consultantCredit(consultant)} · ${updatedAt}${proj.revision ? " · Rev. " + proj.revision : ""}`, { x: 0.5, y: 7.0, w: 12, h: 0.25, fontSize: 8, color: "9ca3af", align: "right" });
   };
 
   // Slide 1 — Cover
@@ -375,9 +297,9 @@ function exportPPT(proj, updatedAt, consultant) {
   if (consultant.logoDataUrl) try { s.addImage({ data: consultant.logoDataUrl, x: 0.5, y: 0.4 + yOff, w: 2, h: 0.7, sizing: { type: "contain", w: 2, h: 0.7 } }); } catch {}
   s.addText(proj.name, { x: 0.5, y: 1.6 + yOff, w: 12, h: 1.1, fontSize: 34, bold: true, color: "FFFFFF" });
   s.addText(proj.client, { x: 0.5, y: 2.75 + yOff, w: 8, h: 0.4, fontSize: 16, color: "94a3b8" });
-  const meta = [proj.meetingDate && `Meeting: ${proj.meetingDate}`, proj.revision && `Rev. ${proj.revision}`, `As of ${updatedAt}`].filter(Boolean).join("  ·  ");
+  const meta = projectMeta(proj, [`As of ${updatedAt}`]);
   s.addText(meta, { x: 0.5, y: 3.2 + yOff, w: 12, h: 0.3, fontSize: 11, color: "475569" });
-  s.addShape(pptx.ShapeType.rect, { x: 0.5, y: 3.65 + yOff, w: 1.8, h: 0.38, fill: { color: ragColor[proj.rag] || "64748b" }, line: { color: "transparent" } });
+  s.addShape(pptx.ShapeType.rect, { x: 0.5, y: 3.65 + yOff, w: 1.8, h: 0.38, fill: { color: RAG_HEX[proj.rag] || "64748b" }, line: { color: "transparent" } });
   s.addText(proj.rag, { x: 0.5, y: 3.65 + yOff, w: 1.8, h: 0.38, fontSize: 12, bold: true, color: "FFFFFF", align: "center" });
   s.addText(proj.execSummary || "", { x: 0.5, y: 4.2 + yOff, w: 12, h: 1.2, fontSize: 13, color: "cbd5e1", wrap: true });
   footerBar(s);
@@ -394,7 +316,7 @@ function exportPPT(proj, updatedAt, consultant) {
   // Slide 3 — KPIs
   s = pptx.addSlide(); s.background = { color: LIGHT }; confBar(s);
   s.addText("Project Snapshot", { x: 0.5, y: 0.35 + yOff, w: 12, h: 0.5, fontSize: 22, bold: true, color: DARK });
-  [{ label: "Budget", val: `$${proj.budget.toLocaleString()}`, sub: `$${proj.spent.toLocaleString()} spent` }, { label: "Remaining", val: `$${(proj.budget - proj.spent).toLocaleString()}`, sub: `${100 - budPct}% left` }, { label: "Milestones", val: `${milDone}/${proj.milestones.length}`, sub: `${pct(milDone, proj.milestones.length)}% done` }, { label: "Open Tasks", val: String(proj.tasks.filter(t => t.status !== "Done" && t.status !== "Complete").length), sub: `of ${proj.tasks.length}` }].forEach((k, i) => {
+  [{ label: "Budget", val: `$${proj.budget.toLocaleString()}`, sub: `$${proj.spent.toLocaleString()} spent` }, { label: "Remaining", val: `$${(proj.budget - proj.spent).toLocaleString()}`, sub: `${100 - budPct}% left` }, { label: "Milestones", val: `${milDone}/${proj.milestones.length}`, sub: `${pct(milDone, proj.milestones.length)}% done` }, { label: "Open Tasks", val: String(openTasks(proj).length), sub: `of ${proj.tasks.length}` }].forEach((k, i) => {
     const x = 0.4 + i * 3.15;
     s.addShape(pptx.ShapeType.rect, { x, y: 1.1 + yOff, w: 2.9, h: 1.5, fill: { color: "FFFFFF" }, line: { color: "e2e8f0", pt: 1 } });
     s.addText(k.label, { x, y: 1.2 + yOff, w: 2.9, h: 0.3, fontSize: 10, color: GRAY, align: "center" });
@@ -402,7 +324,7 @@ function exportPPT(proj, updatedAt, consultant) {
     s.addText(k.sub, { x, y: 2.2 + yOff, w: 2.9, h: 0.28, fontSize: 10, color: GRAY, align: "center" });
   });
   s.addShape(pptx.ShapeType.rect, { x: 0.5, y: 2.9 + yOff, w: 12, h: 0.28, fill: { color: "e2e8f0" }, line: { color: "e2e8f0" } });
-  if (budPct > 0) s.addShape(pptx.ShapeType.rect, { x: 0.5, y: 2.9 + yOff, w: Math.max(0.1, 12 * budPct / 100), h: 0.28, fill: { color: budPct > 90 ? "ef4444" : budPct > 70 ? "f59e0b" : "10b981" }, line: { color: "transparent" } });
+  if (budPct > 0) s.addShape(pptx.ShapeType.rect, { x: 0.5, y: 2.9 + yOff, w: Math.max(0.1, 12 * budPct / 100), h: 0.28, fill: { color: budgetBarHex(budPct) }, line: { color: "transparent" } });
   s.addText(`Budget: ${budPct}% utilized  ·  $${proj.spent.toLocaleString()} of $${proj.budget.toLocaleString()}`, { x: 0.5, y: 3.25 + yOff, w: 12, h: 0.25, fontSize: 10, color: GRAY });
   footerBar(s);
 
@@ -424,17 +346,17 @@ function exportPPT(proj, updatedAt, consultant) {
   footerBar(s);
 
   // Slide 5 — Risks + Open Asks
-  if (proj.risks.length || proj.openAsks.filter(a => !a.done).length) {
+  if (proj.risks.length || openAsksOf(proj).length) {
     s = pptx.addSlide(); s.background = { color: LIGHT }; confBar(s);
     s.addText("Risks & Open Asks", { x: 0.5, y: 0.35 + yOff, w: 12, h: 0.5, fontSize: 22, bold: true, color: DARK });
     proj.risks.slice(0, 5).forEach((r, i) => {
       const y = 1.05 + yOff + i * 0.72;
-      s.addShape(pptx.ShapeType.rect, { x: 0.5, y, w: 0.65, h: 0.28, fill: { color: ragColor[r.flag] || "64748b" }, line: { color: "transparent" } });
+      s.addShape(pptx.ShapeType.rect, { x: 0.5, y, w: 0.65, h: 0.28, fill: { color: RAG_HEX[r.flag] || "64748b" }, line: { color: "transparent" } });
       s.addText(r.flag, { x: 0.5, y, w: 0.65, h: 0.28, fontSize: 9, bold: true, color: "FFFFFF", align: "center" });
       s.addText(r.item, { x: 1.3, y, w: 5, h: 0.28, fontSize: 11, color: DARK });
       s.addText(`Mitigation: ${r.mitigation}`, { x: 1.3, y: y + 0.3, w: 5, h: 0.26, fontSize: 9, color: GRAY });
     });
-    const oa = proj.openAsks.filter(a => !a.done);
+    const oa = openAsksOf(proj);
     if (oa.length) {
       s.addText("Open Asks from Client", { x: 7, y: 0.95 + yOff, w: 5.5, h: 0.35, fontSize: 13, bold: true, color: DARK });
       oa.slice(0, 5).forEach((a, i) => {
@@ -458,20 +380,18 @@ function exportPPT(proj, updatedAt, consultant) {
     footerBar(s);
   }
 
-  pptx.writeFile({ fileName: `${proj.client.replace(/\s+/g, "_")}_${proj.name.replace(/\s+/g, "_")}_status.pptx` });
+  pptx.writeFile({ fileName: projectFileName(proj, "pptx", "_status") });
 }
 
 function buildClientHTML(proj, updatedAt, consultant) {
-  const ragBg = { Green: "#d1fae5", Amber: "#fef3c7", Red: "#fee2e2" };
-  const ragTxt = { Green: "#065f46", Amber: "#92400e", Red: "#991b1b" };
-  const scBg = { "Done": "#d1fae5", "Complete": "#d1fae5", "In Progress": "#dbeafe", "In Review": "#dbeafe", "Not Started": "#f3f4f6", "Planning": "#fef3c7" };
-  const scTxt = { "Done": "#065f46", "Complete": "#065f46", "In Progress": "#1e40af", "In Review": "#1e40af", "Not Started": "#6b7280", "Planning": "#92400e" };
-  const badge = v => `<span style="background:${scBg[v]||"#f3f4f6"};color:${scTxt[v]||"#6b7280"};padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600">${v}</span>`;
+  const badge = v => `<span style="background:${STATUS_BG[v]||"#f3f4f6"};color:${STATUS_TEXT[v]||"#6b7280"};padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600">${v}</span>`;
+  const ragPill = (v, pad) => `<span style="background:${RAG_BG[v]||"#f3f4f6"};color:${RAG_TEXT[v]||"#374151"};padding:${pad};border-radius:999px;font-size:11px;font-weight:600">${v}</span>`;
+  const emptyBox = label => `<div style="border:2px dashed #f1f5f9;border-radius:8px;padding:16px;text-align:center;font-size:12px;color:#d1d5db">${label}</div>`;
   const p = pct(proj.spent, proj.budget);
-  const barCol = p > 90 ? "#ef4444" : p > 70 ? "#f59e0b" : "#10b981";
-  const milDone = proj.milestones.filter(m => m.done).length;
-  const confBanner = proj.confidential ? `<div style="background:#dc2626;color:#fff;text-align:center;padding:8px 0;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase">⚠ Confidential — Not for Distribution</div>` : "";
-  const meta = [proj.meetingDate && `Meeting: ${proj.meetingDate}`, proj.revision && `Rev. ${proj.revision}`].filter(Boolean).join("  ·  ");
+  const barCol = `#${budgetBarHex(p)}`;
+  const milDone = doneMilestones(proj);
+  const confBanner = proj.confidential ? `<div style="background:#dc2626;color:#fff;text-align:center;padding:8px 0;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase">${CONFIDENTIAL_LABEL}</div>` : "";
+  const meta = projectMeta(proj);
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${proj.name} — ${proj.client}${proj.confidential?" [CONFIDENTIAL]":""}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',system-ui,sans-serif;background:#f1f5f9;color:#111827}
@@ -502,7 +422,7 @@ ${confBanner}
 <div class="topbar">
   <div class="topbar-left">
     ${consultant.logoDataUrl ? `<img src="${consultant.logoDataUrl}" alt="logo" />` : ""}
-    <div><div class="topbar-title">${consultant.name}${consultant.firm ? " · " + consultant.firm : ""}</div><div class="topbar-sub">Project Status Report</div></div>
+    <div><div class="topbar-title">${consultantCredit(consultant)}</div><div class="topbar-sub">Project Status Report</div></div>
   </div>
   ${proj.clientLogoDataUrl ? `<div class="topbar-right"><img src="${proj.clientLogoDataUrl}" alt="client logo" /></div>` : ""}
 </div>
@@ -510,7 +430,7 @@ ${confBanner}
 <div class="header">
   <div class="hrow">
     <div><h1>${proj.name}</h1><div class="sub">${proj.client} · Lead: ${proj.lead}${meta ? " · " + meta : ""} · As of ${updatedAt}</div>
-    <span class="rag" style="background:${ragBg[proj.rag]||"#f3f4f6"};color:${ragTxt[proj.rag]||"#374151"}">${proj.rag}</span></div>
+    <span class="rag" style="background:${RAG_BG[proj.rag]||"#f3f4f6"};color:${RAG_TEXT[proj.rag]||"#374151"}">${proj.rag}</span></div>
   </div>
   <div style="margin-top:16px;font-size:13px;color:#4b5563;line-height:1.7">${proj.execSummary || "<em style='color:#d1d5db'>No summary provided.</em>"}</div>
 </div>
@@ -519,19 +439,19 @@ ${proj.talkingPoints ? `<div class="card" style="margin-bottom:24px"><h2>🎙 Ta
   <div class="card"><div style="font-size:11px;color:#64748b;font-weight:500;margin-bottom:6px">Budget Remaining</div><div class="kpi-val">$${(proj.budget-proj.spent).toLocaleString()}</div><div class="kpi-sub">${100-p}% left</div></div>
   <div class="card"><div style="font-size:11px;color:#64748b;font-weight:500;margin-bottom:6px">Budget Used</div><div class="kpi-val">$${proj.spent.toLocaleString()}</div><div class="kpi-sub">of $${proj.budget.toLocaleString()}</div></div>
   <div class="card"><div style="font-size:11px;color:#64748b;font-weight:500;margin-bottom:6px">Milestones</div><div class="kpi-val">${milDone}/${proj.milestones.length}</div><div class="kpi-sub">${pct(milDone,proj.milestones.length)}% complete</div></div>
-  <div class="card"><div style="font-size:11px;color:#64748b;font-weight:500;margin-bottom:6px">Open Tasks</div><div class="kpi-val">${proj.tasks.filter(t=>t.status!=="Done"&&t.status!=="Complete").length}</div><div class="kpi-sub">${proj.tasks.length} total</div></div>
+  <div class="card"><div style="font-size:11px;color:#64748b;font-weight:500;margin-bottom:6px">Open Tasks</div><div class="kpi-val">${openTasks(proj).length}</div><div class="kpi-sub">${proj.tasks.length} total</div></div>
 </div>
 ${proj.budget>0?`<div style="margin-bottom:24px"><div style="font-size:11px;color:#64748b;font-weight:500;margin-bottom:8px">Budget: $${proj.spent.toLocaleString()} of $${proj.budget.toLocaleString()} (${p}%)</div><div style="background:#f1f5f9;border-radius:999px;height:8px"><div style="background:${barCol};height:8px;border-radius:999px;width:${p}%"></div></div></div>`:""}
 <div class="grid2">
-  <div class="card"><h2>Milestones</h2>${proj.milestones.length?proj.milestones.map(m=>`<div class="ms-row"><div class="ms-dot${m.done?" ms-done":""}"></div><div><div style="font-size:13px;color:${m.done?"#9ca3af":"#374151"};${m.done?"text-decoration:line-through":""}">${m.name}</div><div style="font-size:11px;color:#9ca3af">${m.date}</div></div></div>`).join(""):`<div style="border:2px dashed #f1f5f9;border-radius:8px;padding:16px;text-align:center;font-size:12px;color:#d1d5db">No milestones added</div>`}</div>
-  <div class="card"><h2>Deliverables</h2>${proj.deliverables.length?`<table><thead><tr><th>Output</th><th>Due</th><th>Status</th></tr></thead><tbody>${proj.deliverables.map(d=>`<tr><td>${d.name}</td><td style="color:#64748b">${d.due}</td><td>${badge(d.status)}</td></tr>`).join("")}</tbody></table>`:`<div style="border:2px dashed #f1f5f9;border-radius:8px;padding:16px;text-align:center;font-size:12px;color:#d1d5db">No deliverables added</div>`}</div>
+  <div class="card"><h2>Milestones</h2>${proj.milestones.length?proj.milestones.map(m=>`<div class="ms-row"><div class="ms-dot${m.done?" ms-done":""}"></div><div><div style="font-size:13px;color:${m.done?"#9ca3af":"#374151"};${m.done?"text-decoration:line-through":""}">${m.name}</div><div style="font-size:11px;color:#9ca3af">${m.date}</div></div></div>`).join(""):emptyBox("No milestones added")}</div>
+  <div class="card"><h2>Deliverables</h2>${proj.deliverables.length?`<table><thead><tr><th>Output</th><th>Due</th><th>Status</th></tr></thead><tbody>${proj.deliverables.map(d=>`<tr><td>${d.name}</td><td style="color:#64748b">${d.due}</td><td>${badge(d.status)}</td></tr>`).join("")}</tbody></table>`:emptyBox("No deliverables added")}</div>
 </div>
 <div class="grid2">
-  <div class="card"><h2>Risk Log</h2>${proj.risks.length?proj.risks.map(r=>`<div class="row"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="background:${ragBg[r.flag]||"#f3f4f6"};color:${ragTxt[r.flag]||"#374151"};padding:1px 8px;border-radius:999px;font-size:11px;font-weight:600">${r.flag}</span><span style="font-size:13px;color:#374151">${r.item}</span></div><div style="font-size:11px;color:#94a3b8">Owner: ${r.owner}${r.mitigation?" · "+r.mitigation:""}</div></div>`).join(""):`<div style="border:2px dashed #f1f5f9;border-radius:8px;padding:16px;text-align:center;font-size:12px;color:#d1d5db">No risks logged</div>`}</div>
-  <div class="card"><h2>Open Asks from Client</h2>${proj.openAsks.length?proj.openAsks.map(a=>`<div class="row" style="display:flex;align-items:flex-start;gap:8px"><div style="width:14px;height:14px;border-radius:50%;background:${a.done?"#10b981":"#e2e8f0"};margin-top:2px;flex-shrink:0"></div><div><div style="font-size:13px;color:${a.done?"#94a3b8":"#374151"};${a.done?"text-decoration:line-through":""}">${a.ask}</div><div style="font-size:11px;color:#94a3b8">${a.askedOf}${a.dueBy?" · Due "+a.dueBy:""}</div></div></div>`).join(""):`<div style="border:2px dashed #f1f5f9;border-radius:8px;padding:16px;text-align:center;font-size:12px;color:#d1d5db">No open asks</div>`}</div>
+  <div class="card"><h2>Risk Log</h2>${proj.risks.length?proj.risks.map(r=>`<div class="row"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">${ragPill(r.flag,"1px 8px")}<span style="font-size:13px;color:#374151">${r.item}</span></div><div style="font-size:11px;color:#94a3b8">Owner: ${r.owner}${r.mitigation?" · "+r.mitigation:""}</div></div>`).join(""):emptyBox("No risks logged")}</div>
+  <div class="card"><h2>Open Asks from Client</h2>${proj.openAsks.length?proj.openAsks.map(a=>`<div class="row" style="display:flex;align-items:flex-start;gap:8px"><div style="width:14px;height:14px;border-radius:50%;background:${a.done?"#10b981":"#e2e8f0"};margin-top:2px;flex-shrink:0"></div><div><div style="font-size:13px;color:${a.done?"#94a3b8":"#374151"};${a.done?"text-decoration:line-through":""}">${a.ask}</div><div style="font-size:11px;color:#94a3b8">${a.askedOf}${a.dueBy?" · Due "+a.dueBy:""}</div></div></div>`).join(""):emptyBox("No open asks")}</div>
 </div>
 ${proj.decisions.length?`<div class="card" style="margin-bottom:24px"><h2>Decision Log</h2><table><thead><tr><th>Date</th><th>Decision</th><th>Made By</th></tr></thead><tbody>${proj.decisions.map(d=>`<tr><td style="color:#64748b;white-space:nowrap;width:100px">${d.date}</td><td>${d.decision}</td><td style="color:#64748b">${d.madeBy}</td></tr>`).join("")}</tbody></table></div>`:""}
-<div class="footer">Prepared by ${consultant.name}${consultant.firm?" · "+consultant.firm:""} · ${proj.client}${proj.revision?" · Rev. "+proj.revision:""} · ${updatedAt}${proj.confidential?" · CONFIDENTIAL":""}</div>
+<div class="footer">Prepared by ${consultantCredit(consultant)} · ${proj.client}${proj.revision?" · Rev. "+proj.revision:""} · ${updatedAt}${proj.confidential?" · CONFIDENTIAL":""}</div>
 </div>${confBanner}</body></html>`;
 }
 
@@ -549,26 +469,25 @@ function ShareModal({ proj, updatedAt, consultant, onClose }) {
   const shareURL = buildShareURL(proj);
   const copyLink = () => { navigator.clipboard.writeText(shareURL).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }); };
   const downloadHTML = () => {
-    const html = buildClientHTML(proj, updatedAt, consultant);
-    Object.assign(document.createElement("a"), { href: URL.createObjectURL(new Blob([html], { type: "text/html" })), download: `${proj.client.replace(/\s+/g,"_")}_${proj.name.replace(/\s+/g,"_")}_status.html` }).click();
+    downloadBlob(projectFileName(proj, "html", "_status"), buildClientHTML(proj, updatedAt, consultant), "text/html");
   };
+  const openGmail = (subject, body) => window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(emailTo)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body + "\n\nFull dashboard: " + shareURL)}`, "_blank");
   const sendEmail = async () => {
     if (!emailTo.trim()) return; setSending(true);
     try {
-      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-      const res = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" }, body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 600, system: "Draft a concise professional project status email. Return ONLY JSON with keys: subject, body. No markdown.", messages: [{ role: "user", content: `Status email. Project: ${proj.name}. Client: ${proj.client}. RAG: ${proj.rag}. Summary: ${proj.execSummary}. Milestones: ${proj.milestones.filter(m=>m.done).length}/${proj.milestones.length}. Budget: $${proj.spent}/$${proj.budget}. Under 150 words. Sign off as ${consultant.name}.` }] }) });
-      const data = await res.json();
-      const text = data.content?.find(b => b.type === "text")?.text || "";
+      const text = await askClaude({
+        system: "Draft a concise professional project status email. Return ONLY JSON with keys: subject, body. No markdown.",
+        maxTokens: 600,
+        prompt: `Status email. Project: ${proj.name}. Client: ${proj.client}. RAG: ${proj.rag}. Summary: ${proj.execSummary}. Milestones: ${doneMilestones(proj)}/${proj.milestones.length}. Budget: $${proj.spent}/$${proj.budget}. Under 150 words. Sign off as ${consultant.name}.`,
+      });
       let parsed; try { parsed = JSON.parse(text.replace(/```json|```/g,"").trim()); } catch { parsed = { subject: `${proj.name} — Status Update`, body: text }; }
-      window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(emailTo)}&su=${encodeURIComponent(parsed.subject)}&body=${encodeURIComponent(parsed.body+"\n\nFull dashboard: "+shareURL)}`, "_blank");
+      openGmail(parsed.subject, parsed.body);
     } catch {
-      window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(emailTo)}&su=${encodeURIComponent(proj.name+" — Status Update")}&body=${encodeURIComponent(proj.execSummary+"\n\nFull dashboard: "+shareURL)}`, "_blank");
+      openGmail(`${proj.name} — Status Update`, proj.execSummary);
     }
     setEmailSent(true); setSending(false);
   };
-  return <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={onClose}>
-    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
-      <div className="flex items-center justify-between mb-4"><div className="flex items-center gap-2"><Share2 className="w-5 h-5 text-gray-600" /><h2 className="text-base font-semibold text-gray-800">Share with Client</h2></div><button onClick={onClose}><X className="w-5 h-5 text-gray-400" /></button></div>
+  return <Modal title="Share with Client" icon={<Share2 className="w-5 h-5 text-gray-600" />} onClose={onClose}>
       <div className="text-sm font-semibold text-gray-800 mb-0.5">{proj.name} — {proj.client}</div>
       <div className="text-xs text-gray-400 mb-3">{updatedAt}{proj.revision ? ` · Rev. ${proj.revision}` : ""}</div>
       {proj.confidential && <div className="flex items-center gap-2 p-2 bg-red-50 border border-red-200 rounded-lg mb-3 text-xs text-red-700 font-medium"><AlertTriangle className="w-3.5 h-3.5" />Confidential — watermark on all exports</div>}
@@ -582,8 +501,7 @@ function ShareModal({ proj, updatedAt, consultant, onClose }) {
         <p className="text-xs text-gray-400 mb-3">{s.desc}</p>
         {s.action}
       </div>)}
-    </div>
-  </div>;
+  </Modal>;
 }
 
 // ── PANEL SETTINGS ─────────────────────────────────────────────────────────────
@@ -636,8 +554,7 @@ const INIT_STATE = { dashTitle: "Project Dashboard", projects: [blankProject(1)]
 export default function App() {
   const [state, setState] = useState(() => {
     const saved = loadState();
-    if (saved) saved.projects = saved.projects.map(p => ({ meetingDate:"", revision:"", confidential:false, clientLogoDataUrl:"", talkingPoints:"", ...p }));
-    return saved || INIT_STATE;
+    return saved ? withProjectDefaults(saved) : INIT_STATE;
   });
   const [consultant, setConsultant] = useState(loadConsultant);
   const [activeId, setActiveId] = useState(state.projects[0]?.id || 1);
@@ -651,9 +568,9 @@ export default function App() {
 
   // Load from Supabase on mount — overrides localStorage if cloud data exists
   useEffect(() => {
-    loadFromSupabase().then(cloudState => {
-      if (cloudState) {
-        cloudState.projects = cloudState.projects.map(p => ({ meetingDate:"", revision:"", confidential:false, clientLogoDataUrl:"", talkingPoints:"", ...p }));
+    loadFromSupabase().then(cloud => {
+      if (cloud) {
+        const cloudState = withProjectDefaults(cloud);
         setState(cloudState);
         setActiveId(cloudState.projects[0]?.id);
         saveState(cloudState); // sync to localStorage as cache
@@ -683,18 +600,18 @@ export default function App() {
   const addProject = () => { const id = Date.now(); touch({ ...state, projects: [...projects, blankProject(id)] }); setActiveId(id); };
   const removeProject = id => { if (projects.length === 1) return; const ps = projects.filter(p => p.id !== id); touch({ ...state, projects: ps }); setActiveId(ps[0].id); };
 
-  const updTask = (tid,f,v) => up("tasks", proj.tasks.map(t => t.id===tid ? {...t,[f]:v} : t));
+  // Every collection (tasks, risks, decisions …) is a list of {id, …} items, so add/update/remove
+  // are the same three operations against a named field.
+  const addItem = (field, item) => up(field, [...proj[field], item]);
+  const updItem = (field, id, f, v) => up(field, proj[field].map(x => x.id === id ? { ...x, [f]: v } : x));
+  const removeItem = (field, id) => up(field, proj[field].filter(x => x.id !== id));
+  // Milestones predate item ids and are addressed by index.
   const updMile = (i,f,v) => up("milestones", proj.milestones.map((m,idx) => idx===i ? {...m,[f]:v} : m));
-  const updDeliv = (tid,f,v) => up("deliverables", proj.deliverables.map(d => d.id===tid ? {...d,[f]:v} : d));
-  const updRisk = (tid,f,v) => up("risks", proj.risks.map(r => r.id===tid ? {...r,[f]:v} : r));
-  const updDec = (tid,f,v) => up("decisions", proj.decisions.map(d => d.id===tid ? {...d,[f]:v} : d));
-  const updAsk = (tid,f,v) => up("openAsks", proj.openAsks.map(a => a.id===tid ? {...a,[f]:v} : a));
-  const updMeet = (tid,f,v) => up("meetings", proj.meetings.map(m => m.id===tid ? {...m,[f]:v} : m));
 
-  const exportJSON = () => Object.assign(document.createElement("a"), { href: URL.createObjectURL(new Blob([JSON.stringify(state,null,2)], {type:"application/json"})), download: "dashboard_backup.json" }).click();
+  const exportJSON = () => downloadBlob("dashboard_backup.json", JSON.stringify(state,null,2), "application/json");
   const importJSON = e => { const file = e.target.files?.[0]; if (!file) return; const r = new FileReader(); r.onload = ev => { try { const p = JSON.parse(ev.target.result); if (!p.projects) throw new Error(); touch(p); setActiveId(p.projects[0]?.id); setShowExport(false); setImportErr(""); } catch { setImportErr("Invalid file."); } }; r.readAsText(file); };
 
-  const milDone = proj.milestones.filter(m => m.done).length;
+  const milDone = doneMilestones(proj);
   const milPct = pct(milDone, proj.milestones.length);
   const budPct = pct(proj.spent, proj.budget);
 
@@ -728,7 +645,7 @@ export default function App() {
             <div className="min-w-0">
               <IT value={dashTitle} onSave={v => touch({ ...state, dashTitle: v })} className="text-sm font-semibold text-white" placeholder="Dashboard Title" dark />
               <div className="text-xs text-slate-400 mt-0.5 hidden sm:flex items-center gap-2">
-                <span>{consultant.name}{consultant.firm ? ` · ${consultant.firm}` : ""}</span>
+                <span>{consultantCredit(consultant)}</span>
                 {supabase
                   ? <span className="flex items-center gap-1 text-emerald-400"><Cloud className="w-3 h-3" />Cloud sync on</span>
                   : <span className="flex items-center gap-1 text-slate-500"><CloudOff className="w-3 h-3" />Local only</span>}
@@ -802,7 +719,7 @@ export default function App() {
         <div className="flex items-start justify-between gap-4 mb-5 flex-wrap">
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <IS value={proj.rag} options={["Green","Amber","Red"]} onSave={v => up("rag",v)} colorMap={RAG_BADGE} />
+              <IS value={proj.rag} options={RAG_OPTIONS} onSave={v => up("rag",v)} colorMap={RAG_BADGE} />
               <IT value={proj.name} onSave={v => up("name",v)} className="text-xl font-bold text-slate-800" wide placeholder="Project name" />
               {proj.confidential && <span className="flex items-center gap-1 px-2 py-0.5 bg-red-50 border border-red-200 rounded-full text-xs font-semibold text-red-600"><AlertTriangle className="w-3 h-3" />Confidential</span>}
             </div>
@@ -841,7 +758,7 @@ export default function App() {
             { label: "Budget Remaining", val: <IN value={proj.budget-proj.spent} prefix="$" onSave={v => up("spent",proj.budget-v)} />, sub: `${100-budPct}% left`, icon: <DollarSign className="w-5 h-5 text-emerald-500" />, hi: budPct>90 },
             { label: "Budget Used", val: <IN value={proj.spent} prefix="$" onSave={v => up("spent",v)} />, sub: <>of <IN value={proj.budget} prefix="$" onSave={v => up("budget",v)} /></>, icon: <TrendingUp className="w-5 h-5 text-blue-500" /> },
             { label: "Milestones", val: `${milDone} / ${proj.milestones.length}`, sub: `${milPct}% complete`, icon: <CheckCircle className="w-5 h-5 text-purple-500" /> },
-            { label: "Open Tasks", val: proj.tasks.filter(t=>t.status!=="Done"&&t.status!=="Complete").length, sub: `${proj.tasks.length} total`, icon: <Clock className="w-5 h-5 text-amber-500" /> },
+            { label: "Open Tasks", val: openTasks(proj).length, sub: `${proj.tasks.length} total`, icon: <Clock className="w-5 h-5 text-amber-500" /> },
           ].map((k,i) => <div key={i} className={`bg-white rounded-xl border ${k.hi?"border-red-300":"border-gray-200"} p-4 shadow-sm`}>
             <div className="flex items-center justify-between mb-2"><span className="text-xs text-gray-500 font-medium">{k.label}</span>{k.icon}</div>
             <div className="text-2xl font-bold text-slate-800">{k.val}</div>
@@ -868,7 +785,7 @@ export default function App() {
             <div className="mt-4"><BudgetBar spent={proj.spent} budget={proj.budget} /></div>
           </Card>}
           {panels.milestones && <Card>
-            <SH title="Milestones" onAdd={() => up("milestones",[...proj.milestones,{name:"New milestone",date:"",done:false,variance:0}])} />
+            <SH title="Milestones" onAdd={() => addItem("milestones",{name:"New milestone",date:"",done:false,variance:0})} />
             {proj.milestones.length>0 && <><p className="text-xs text-gray-400 mb-2">{milPct}% complete · {proj.milestones.length-milDone} remaining</p><div className="w-full bg-gray-100 rounded-full h-1.5 mb-4"><div className="bg-purple-500 h-1.5 rounded-full transition-all" style={{width:`${milPct}%`}} /></div></>}
             {proj.milestones.length===0 ? <Empty label="No milestones yet — click Add to start" /> :
             <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
@@ -898,29 +815,29 @@ export default function App() {
         {/* Deliverables + Risks */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {panels.deliverables && <Card>
-            <SH title="Deliverables" onAdd={() => up("deliverables",[...proj.deliverables,{id:Date.now(),name:"New deliverable",status:"Not Started",due:""}])} />
+            <SH title="Deliverables" onAdd={() => addItem("deliverables",{id:Date.now(),name:"New deliverable",status:"Not Started",due:""})} />
             {proj.deliverables.length===0 ? <Empty label="No deliverables yet" /> :
               <table className="w-full text-sm">
                 <thead><tr className="text-xs text-gray-400 border-b border-gray-100 text-left"><th className="pb-2 font-medium">Output</th><th className="pb-2 font-medium">Due</th><th className="pb-2 font-medium">Status</th><th className="pb-2 w-5 print:hidden" /></tr></thead>
                 <tbody>{proj.deliverables.map(d => <tr key={d.id} className="border-b border-gray-50 last:border-0 group">
-                  <td className="py-2.5"><IT value={d.name} onSave={v=>updDeliv(d.id,"name",v)} wide /></td>
-                  <td className="py-2.5 text-gray-500"><IT value={d.due} onSave={v=>updDeliv(d.id,"due",v)} placeholder="YYYY-MM-DD" /></td>
-                  <td className="py-2.5"><IS value={d.status} options={STATUS_OPTIONS} onSave={v=>updDeliv(d.id,"status",v)} /></td>
-                  <td className="py-2.5 text-right print:hidden"><button onClick={()=>up("deliverables",proj.deliverables.filter(x=>x.id!==d.id))} className="opacity-0 group-hover:opacity-100"><Trash2 className="w-3.5 h-3.5 text-gray-300 hover:text-red-400" /></button></td>
+                  <td className="py-2.5"><IT value={d.name} onSave={v=>updItem("deliverables",d.id,"name",v)} wide /></td>
+                  <td className="py-2.5 text-gray-500"><IT value={d.due} onSave={v=>updItem("deliverables",d.id,"due",v)} placeholder="YYYY-MM-DD" /></td>
+                  <td className="py-2.5"><IS value={d.status} options={STATUS_OPTIONS} onSave={v=>updItem("deliverables",d.id,"status",v)} /></td>
+                  <td className="py-2.5 text-right print:hidden"><button onClick={()=>removeItem("deliverables",d.id)} className="opacity-0 group-hover:opacity-100"><Trash2 className="w-3.5 h-3.5 text-gray-300 hover:text-red-400" /></button></td>
                 </tr>)}</tbody>
               </table>}
           </Card>}
           {panels.risks && <Card>
-            <SH title="Risk Log" onAdd={() => up("risks",[...proj.risks,{id:Date.now(),flag:"Amber",item:"New risk",owner:"TBD",mitigation:""}])} />
+            <SH title="Risk Log" onAdd={() => addItem("risks",{id:Date.now(),flag:"Amber",item:"New risk",owner:"TBD",mitigation:""})} />
             {proj.risks.length===0 ? <Empty label="No risks logged" /> :
               <div className="space-y-3">{proj.risks.map(r => <div key={r.id} className="flex gap-2 group">
-                <IS value={r.flag} options={["Green","Amber","Red"]} onSave={v=>updRisk(r.id,"flag",v)} colorMap={RAG_BADGE} />
+                <IS value={r.flag} options={RAG_OPTIONS} onSave={v=>updItem("risks",r.id,"flag",v)} colorMap={RAG_BADGE} />
                 <div className="flex-1 min-w-0">
-                  <IT value={r.item} onSave={v=>updRisk(r.id,"item",v)} className="text-sm text-gray-700" wide />
-                  <div className="text-xs text-gray-400 mt-0.5">Owner: <IT value={r.owner} onSave={v=>updRisk(r.id,"owner",v)} className="text-gray-400" /></div>
-                  <div className="text-xs text-gray-400">Mitigation: <IT value={r.mitigation} onSave={v=>updRisk(r.id,"mitigation",v)} className="text-gray-400" wide /></div>
+                  <IT value={r.item} onSave={v=>updItem("risks",r.id,"item",v)} className="text-sm text-gray-700" wide />
+                  <div className="text-xs text-gray-400 mt-0.5">Owner: <IT value={r.owner} onSave={v=>updItem("risks",r.id,"owner",v)} className="text-gray-400" /></div>
+                  <div className="text-xs text-gray-400">Mitigation: <IT value={r.mitigation} onSave={v=>updItem("risks",r.id,"mitigation",v)} className="text-gray-400" wide /></div>
                 </div>
-                <button onClick={()=>up("risks",proj.risks.filter(x=>x.id!==r.id))} className="opacity-0 group-hover:opacity-100 print:hidden shrink-0"><Trash2 className="w-3.5 h-3.5 text-gray-300 hover:text-red-400" /></button>
+                <button onClick={()=>removeItem("risks",r.id)} className="opacity-0 group-hover:opacity-100 print:hidden shrink-0"><Trash2 className="w-3.5 h-3.5 text-gray-300 hover:text-red-400" /></button>
               </div>)}</div>}
           </Card>}
         </div>
@@ -928,43 +845,43 @@ export default function App() {
         {/* Decisions + Open Asks */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {panels.decisions && <Card>
-            <SH title="Decision Log" onAdd={() => up("decisions",[...proj.decisions,{id:Date.now(),date:todayISO(),decision:"New decision",madeBy:proj.lead}])} />
+            <SH title="Decision Log" onAdd={() => addItem("decisions",{id:Date.now(),date:todayISO(),decision:"New decision",madeBy:proj.lead})} />
             {proj.decisions.length===0 ? <Empty label="No decisions logged" /> :
               <div className="space-y-2">{proj.decisions.map(d => <div key={d.id} className="flex gap-2 group border-b border-gray-50 pb-2 last:border-0">
                 <div className="flex-1 min-w-0">
-                  <IT value={d.decision} onSave={v=>updDec(d.id,"decision",v)} className="text-sm text-gray-700" wide />
-                  <div className="text-xs text-gray-400 mt-0.5"><IT value={d.date} onSave={v=>updDec(d.id,"date",v)} className="text-gray-400" /> · <IT value={d.madeBy} onSave={v=>updDec(d.id,"madeBy",v)} className="text-gray-400" /></div>
+                  <IT value={d.decision} onSave={v=>updItem("decisions",d.id,"decision",v)} className="text-sm text-gray-700" wide />
+                  <div className="text-xs text-gray-400 mt-0.5"><IT value={d.date} onSave={v=>updItem("decisions",d.id,"date",v)} className="text-gray-400" /> · <IT value={d.madeBy} onSave={v=>updItem("decisions",d.id,"madeBy",v)} className="text-gray-400" /></div>
                 </div>
-                <button onClick={()=>up("decisions",proj.decisions.filter(x=>x.id!==d.id))} className="opacity-0 group-hover:opacity-100 print:hidden shrink-0"><Trash2 className="w-3.5 h-3.5 text-gray-300 hover:text-red-400" /></button>
+                <button onClick={()=>removeItem("decisions",d.id)} className="opacity-0 group-hover:opacity-100 print:hidden shrink-0"><Trash2 className="w-3.5 h-3.5 text-gray-300 hover:text-red-400" /></button>
               </div>)}</div>}
           </Card>}
           {panels.openAsks && <Card>
-            <SH title="Open Asks from Client" onAdd={() => up("openAsks",[...proj.openAsks,{id:Date.now(),ask:"New ask",askedOf:"Client",dueBy:"",done:false}])} />
+            <SH title="Open Asks from Client" onAdd={() => addItem("openAsks",{id:Date.now(),ask:"New ask",askedOf:"Client",dueBy:"",done:false})} />
             {proj.openAsks.length===0 ? <Empty label="No open asks" /> :
               <div className="space-y-2">{proj.openAsks.map(a => <div key={a.id} className="flex items-start gap-2 group border-b border-gray-50 pb-2 last:border-0">
-                <button onClick={()=>updAsk(a.id,"done",!a.done)} className="mt-0.5 shrink-0">
+                <button onClick={()=>updItem("openAsks",a.id,"done",!a.done)} className="mt-0.5 shrink-0">
                   {a.done ? <CheckCircle className="w-4 h-4 text-emerald-500" /> : <Circle className="w-4 h-4 text-gray-300 hover:text-gray-400" />}
                 </button>
                 <div className="flex-1 min-w-0">
-                  <IT value={a.ask} onSave={v=>updAsk(a.id,"ask",v)} className={`text-sm ${a.done?"line-through text-gray-400":"text-gray-700"}`} wide />
-                  <div className="text-xs text-gray-400 mt-0.5">Asked of: <IT value={a.askedOf} onSave={v=>updAsk(a.id,"askedOf",v)} className="text-gray-400" /> · Due: <IT value={a.dueBy} onSave={v=>updAsk(a.id,"dueBy",v)} className="text-gray-400" placeholder="YYYY-MM-DD" /></div>
+                  <IT value={a.ask} onSave={v=>updItem("openAsks",a.id,"ask",v)} className={`text-sm ${a.done?"line-through text-gray-400":"text-gray-700"}`} wide />
+                  <div className="text-xs text-gray-400 mt-0.5">Asked of: <IT value={a.askedOf} onSave={v=>updItem("openAsks",a.id,"askedOf",v)} className="text-gray-400" /> · Due: <IT value={a.dueBy} onSave={v=>updItem("openAsks",a.id,"dueBy",v)} className="text-gray-400" placeholder="YYYY-MM-DD" /></div>
                 </div>
-                <button onClick={()=>up("openAsks",proj.openAsks.filter(x=>x.id!==a.id))} className="opacity-0 group-hover:opacity-100 print:hidden shrink-0"><Trash2 className="w-3.5 h-3.5 text-gray-300 hover:text-red-400" /></button>
+                <button onClick={()=>removeItem("openAsks",a.id)} className="opacity-0 group-hover:opacity-100 print:hidden shrink-0"><Trash2 className="w-3.5 h-3.5 text-gray-300 hover:text-red-400" /></button>
               </div>)}</div>}
           </Card>}
         </div>
 
         {/* Meeting Log */}
         {panels.meetings && <Card className="mb-6">
-          <SH title="Meeting Log" onAdd={() => up("meetings",[...proj.meetings,{id:Date.now(),date:todayISO(),attendees:`${proj.lead}, Client`,summary:""}])} />
+          <SH title="Meeting Log" onAdd={() => addItem("meetings",{id:Date.now(),date:todayISO(),attendees:`${proj.lead}, Client`,summary:""})} />
           {proj.meetings.length===0 ? <Empty label="No meetings logged" /> :
             <table className="w-full text-sm">
               <thead><tr className="text-xs text-gray-400 border-b border-gray-100 text-left"><th className="pb-2 w-24">Date</th><th className="pb-2 w-40">Attendees</th><th className="pb-2">Summary</th><th className="pb-2 w-5 print:hidden" /></tr></thead>
               <tbody>{proj.meetings.map(m => <tr key={m.id} className="border-b border-gray-50 last:border-0 group">
-                <td className="py-2.5 text-gray-500 align-top"><IT value={m.date} onSave={v=>updMeet(m.id,"date",v)} /></td>
-                <td className="py-2.5 text-gray-500 align-top"><IT value={m.attendees} onSave={v=>updMeet(m.id,"attendees",v)} wide /></td>
-                <td className="py-2.5 text-gray-700 align-top"><IT value={m.summary} onSave={v=>updMeet(m.id,"summary",v)} wide /></td>
-                <td className="py-2.5 align-top text-right print:hidden"><button onClick={()=>up("meetings",proj.meetings.filter(x=>x.id!==m.id))} className="opacity-0 group-hover:opacity-100"><Trash2 className="w-3.5 h-3.5 text-gray-300 hover:text-red-400" /></button></td>
+                <td className="py-2.5 text-gray-500 align-top"><IT value={m.date} onSave={v=>updItem("meetings",m.id,"date",v)} /></td>
+                <td className="py-2.5 text-gray-500 align-top"><IT value={m.attendees} onSave={v=>updItem("meetings",m.id,"attendees",v)} wide /></td>
+                <td className="py-2.5 text-gray-700 align-top"><IT value={m.summary} onSave={v=>updItem("meetings",m.id,"summary",v)} wide /></td>
+                <td className="py-2.5 align-top text-right print:hidden"><button onClick={()=>removeItem("meetings",m.id)} className="opacity-0 group-hover:opacity-100"><Trash2 className="w-3.5 h-3.5 text-gray-300 hover:text-red-400" /></button></td>
               </tr>)}</tbody>
             </table>}
         </Card>}
@@ -972,15 +889,15 @@ export default function App() {
         {/* Tasks */}
         {panels.tasks && <DragTable
           tasks={proj.tasks}
-          onUpdate={updTask}
-          onDelete={tid => up("tasks",proj.tasks.filter(t=>t.id!==tid))}
-          onAdd={() => up("tasks",[...proj.tasks,{id:Date.now(),name:"New task",status:"Not Started",owner:proj.lead,due:""}])}
+          onUpdate={(id,f,v) => updItem("tasks",id,f,v)}
+          onDelete={id => removeItem("tasks",id)}
+          onAdd={() => addItem("tasks",{id:Date.now(),name:"New task",status:"Not Started",owner:proj.lead,due:""})}
           onReorder={r => up("tasks",r)}
         />}
 
         {/* Footer */}
         <div className="mt-10 pt-6 border-t border-gray-200 text-center text-xs text-gray-400 print:mt-4">
-          Prepared by {consultant.name}{consultant.firm ? ` · ${consultant.firm}` : ""} · {proj.client}{proj.revision ? ` · Rev. ${proj.revision}` : ""} · {updatedAt}
+          Prepared by {consultantCredit(consultant)} · {proj.client}{proj.revision ? ` · Rev. ${proj.revision}` : ""} · {updatedAt}
         </div>
       </div>
     </div>
