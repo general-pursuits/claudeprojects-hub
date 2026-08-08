@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import { formatTime, nextBid } from './auction';
 
 // --- YOUR DIGITAL SIGNATURES ---
 // Replace the text inside the quotes with your actual Supabase URL and Key
@@ -33,7 +34,7 @@ export default function App() {
 
   // When a collector clicks PLACE BID, it updates the master ledger
   const handleBid = async () => {
-    const newBid = bid + 15;
+    const newBid = nextBid(bid);
     setBid(newBid); // Updates the screen instantly
 
     // Sends the new price to Supabase
@@ -45,13 +46,6 @@ export default function App() {
     if (error) {
       console.error("Error updating ledger:", error);
     }
-  };
-
-  const formatTime = (seconds) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
   return (
