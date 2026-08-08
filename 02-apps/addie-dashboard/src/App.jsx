@@ -10,6 +10,20 @@ import PptxGenJS from "pptxgenjs";
 import * as XLSX from "xlsx";
 import { createClient } from "@supabase/supabase-js";
 
+// ── AI ─────────────────────────────────────────────────────────────────────────
+// Requests go through the Netlify function at /api/anthropic so the API key stays
+// server-side; a VITE_-prefixed key would be inlined into the public bundle.
+async function generateWithAI({ system, prompt, max_tokens }) {
+  const res = await fetch("/api/anthropic", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ system, prompt, max_tokens }),
+  });
+  if (!res.ok) throw new Error("AI request failed");
+  const data = await res.json();
+  return data.text || "";
+}
+
 // ── SUPABASE ───────────────────────────────────────────────────────────────────
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -282,24 +296,17 @@ function TalkingPointsPanel({ proj, talkingPoints, onSave }) {
   const generate = async () => {
     setLoading(true); setError("");
     try {
-      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-      if (!apiKey) throw new Error("no key");
       const milDone = proj.milestones.filter(m => m.done).length;
       const openRisks = proj.risks.filter(r => r.flag !== "Green");
       const openAsks = proj.openAsks.filter(a => !a.done);
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514", max_tokens: 700,
-          system: "You are a consulting engagement manager. Generate concise, confident talking points for presenting a project status dashboard to a client. Return 4-5 bullet points as plain text, each starting with '•'. No headers, no markdown, no preamble.",
-          messages: [{ role: "user", content: `Generate talking points:\nProject: ${proj.name}\nClient: ${proj.client}\nRAG: ${proj.rag}\nSummary: ${proj.execSummary || "Not provided"}\nBudget: $${proj.spent.toLocaleString()} of $${proj.budget.toLocaleString()} (${pct(proj.spent, proj.budget)}%)\nMilestones: ${milDone}/${proj.milestones.length} complete\nOpen Risks: ${openRisks.map(r => r.item).join(", ") || "None"}\nOpen Asks: ${openAsks.map(a => a.ask).join(", ") || "None"}\nFocus: what's going well, what needs client attention, next steps, risks to flag.` }]
-        })
+      const text = await generateWithAI({
+        max_tokens: 700,
+        system: "You are a consulting engagement manager. Generate concise, confident talking points for presenting a project status dashboard to a client. Return 4-5 bullet points as plain text, each starting with '•'. No headers, no markdown, no preamble.",
+        prompt: `Generate talking points:\nProject: ${proj.name}\nClient: ${proj.client}\nRAG: ${proj.rag}\nSummary: ${proj.execSummary || "Not provided"}\nBudget: $${proj.spent.toLocaleString()} of $${proj.budget.toLocaleString()} (${pct(proj.spent, proj.budget)}%)\nMilestones: ${milDone}/${proj.milestones.length} complete\nOpen Risks: ${openRisks.map(r => r.item).join(", ") || "None"}\nOpen Asks: ${openAsks.map(a => a.ask).join(", ") || "None"}\nFocus: what's going well, what needs client attention, next steps, risks to flag.`,
       });
-      const data = await res.json();
-      onSave(data.content?.find(b => b.type === "text")?.text || "");
+      onSave(text);
     } catch {
-      setError("Set VITE_ANTHROPIC_API_KEY in Netlify environment variables to enable AI generation, or type notes manually.");
+      setError("Set ANTHROPIC_API_KEY in the Netlify site environment variables to enable AI generation, or type notes manually.");
     }
     setLoading(false);
   };
@@ -555,10 +562,11 @@ function ShareModal({ proj, updatedAt, consultant, onClose }) {
   const sendEmail = async () => {
     if (!emailTo.trim()) return; setSending(true);
     try {
-      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-      const res = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" }, body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 600, system: "Draft a concise professional project status email. Return ONLY JSON with keys: subject, body. No markdown.", messages: [{ role: "user", content: `Status email. Project: ${proj.name}. Client: ${proj.client}. RAG: ${proj.rag}. Summary: ${proj.execSummary}. Milestones: ${proj.milestones.filter(m=>m.done).length}/${proj.milestones.length}. Budget: $${proj.spent}/$${proj.budget}. Under 150 words. Sign off as ${consultant.name}.` }] }) });
-      const data = await res.json();
-      const text = data.content?.find(b => b.type === "text")?.text || "";
+      const text = await generateWithAI({
+        max_tokens: 600,
+        system: "Draft a concise professional project status email. Return ONLY JSON with keys: subject, body. No markdown.",
+        prompt: `Status email. Project: ${proj.name}. Client: ${proj.client}. RAG: ${proj.rag}. Summary: ${proj.execSummary}. Milestones: ${proj.milestones.filter(m=>m.done).length}/${proj.milestones.length}. Budget: $${proj.spent}/$${proj.budget}. Under 150 words. Sign off as ${consultant.name}.`,
+      });
       let parsed; try { parsed = JSON.parse(text.replace(/```json|```/g,"").trim()); } catch { parsed = { subject: `${proj.name} — Status Update`, body: text }; }
       window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(emailTo)}&su=${encodeURIComponent(parsed.subject)}&body=${encodeURIComponent(parsed.body+"\n\nFull dashboard: "+shareURL)}`, "_blank");
     } catch {

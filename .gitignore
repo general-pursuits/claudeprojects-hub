@@ -1,5 +1,11 @@
 .DS_Store
 node_modules/
+
+# Secrets — never commit real credentials (.env.example files are tracked)
+.env
+.env.*
+!.env.example
+
 .netlify/
 __pycache__/
 *.worktrees/
