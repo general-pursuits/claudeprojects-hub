@@ -18,7 +18,62 @@ const CONFIG = {
   SHEET_NAME: "Inquiry Tracker",
   SPREADSHEET_ID: "YOUR_SPREADSHEET_ID_HERE",  // <-- Replace after uploading the sheet
   RESPONSE_WINDOW: "1–2 business days",         // <-- Shown in the auto-confirmation email
+  MAX_FIELD_LENGTH: 200,                        // Name / company / interest
+  MAX_MESSAGE_LENGTH: 5000,
+  MAX_CONFIRMATIONS_PER_HOUR: 20,               // Throttle so the endpoint can't be used as a mail relay
 };
+
+
+// ─── INPUT HANDLING ───
+// The endpoint is public ("anyone, even anonymous" is required for the website form),
+// so every value below is untrusted: escape it before it reaches an HTML email and
+// cap its length before it reaches the sheet.
+
+function escapeHtml(value) {
+  return String(value === null || value === undefined ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function cleanField(value, maxLength) {
+  return String(value === null || value === undefined ? "" : value)
+    .replace(/[\u0000-\u001F\u007F]/g, " ")
+    .trim()
+    .slice(0, maxLength);
+}
+
+function isValidEmail(value) {
+  return /^[^\s@,;:<>"']+@[^\s@,;:<>"']+\.[A-Za-z]{2,}$/.test(value);
+}
+
+// Strips leading characters that spreadsheets interpret as a formula.
+function sheetSafe(value) {
+  return /^[=+\-@\t\r]/.test(value) ? "'" + value : value;
+}
+
+function parseSubmission(raw) {
+  const email = cleanField(raw.email, CONFIG.MAX_FIELD_LENGTH).toLowerCase();
+  return {
+    name: cleanField(raw.name, CONFIG.MAX_FIELD_LENGTH),
+    email: isValidEmail(email) ? email : "",
+    company: cleanField(raw.company, CONFIG.MAX_FIELD_LENGTH),
+    interest: cleanField(raw.interest, CONFIG.MAX_FIELD_LENGTH),
+    message: cleanField(raw.message, CONFIG.MAX_MESSAGE_LENGTH),
+  };
+}
+
+// Rolling hourly cap on outbound confirmations.
+function confirmationAllowed() {
+  const cache = CacheService.getScriptCache();
+  const key = "confirmations-" + Math.floor(Date.now() / 3600000);
+  const sent = Number(cache.get(key) || 0);
+  if (sent >= CONFIG.MAX_CONFIRMATIONS_PER_HOUR) return false;
+  cache.put(key, String(sent + 1), 3600);
+  return true;
+}
 
 
 // ─── MAIN HANDLER ───
@@ -26,8 +81,14 @@ const CONFIG = {
 
 function doPost(e) {
   try {
-    // Parse the form data
-    const data = JSON.parse(e.postData.contents);
+    // Parse and sanitise the form data
+    const data = parseSubmission(JSON.parse(e.postData.contents));
+
+    if (!data.name && !data.email && !data.message) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ result: "error", message: "Please fill in the form before submitting." }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
 
     // Log to sheet
     const row = logInquiry(data);
@@ -36,7 +97,7 @@ function doPost(e) {
     sendNotification(data, row);
 
     // Send auto-confirmation to the inquiry sender
-    if (data.email) {
+    if (data.email && confirmationAllowed()) {
       sendConfirmation(data);
     }
 
@@ -46,9 +107,10 @@ function doPost(e) {
       .setMimeType(ContentService.MimeType.JSON);
 
   } catch (error) {
+    // Details stay in the script log; the response stays generic.
     Logger.log("Error: " + error.toString());
     return ContentService
-      .createTextOutput(JSON.stringify({ result: "error", message: error.toString() }))
+      .createTextOutput(JSON.stringify({ result: "error", message: "Submission could not be processed." }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 }
@@ -76,11 +138,11 @@ function logInquiry(data) {
   sheet.getRange(newRow, 1, 1, 15).setValues([[
     id,                                    // A: ID
     now,                                   // B: Date Received
-    data.name || "",                       // C: Name
-    data.email || "",                      // D: Email
-    data.company || "",                    // E: Company
-    data.interest || "",                   // F: Service Interest
-    data.message || "",                    // G: Message
+    sheetSafe(data.name),                  // C: Name
+    sheetSafe(data.email),                 // D: Email
+    sheetSafe(data.company),               // E: Company
+    sheetSafe(data.interest),              // F: Service Interest
+    sheetSafe(data.message),               // G: Message
     "New",                                 // H: Status (always starts as New)
     "",                                    // I: Priority (you set this)
     "",                                    // J: Follow-Up Date
@@ -109,6 +171,15 @@ function sendNotification(data, row) {
   const subject = "New Inquiry: " + (data.name || "Unknown") +
     (data.company ? " — " + data.company : "");
 
+  // Escaped copies for the HTML body
+  const safe = {
+    name: escapeHtml(data.name),
+    email: escapeHtml(data.email),
+    company: escapeHtml(data.company),
+    interest: escapeHtml(data.interest),
+    message: escapeHtml(data.message),
+  };
+
   // Build the HTML email body
   const html = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; color: #1C1916;">
@@ -124,33 +195,33 @@ function sendNotification(data, row) {
 
         <!-- Quick summary -->
         <div style="margin-bottom: 24px;">
-          <div style="font-size: 22px; font-weight: 700; color: #1C1916; margin-bottom: 4px;">${data.name || "No name provided"}</div>
-          <div style="font-size: 14px; color: #8A7D6E;">${data.company || "No company"} &middot; ${data.interest || "No service selected"}</div>
+          <div style="font-size: 22px; font-weight: 700; color: #1C1916; margin-bottom: 4px;">${safe.name || "No name provided"}</div>
+          <div style="font-size: 14px; color: #8A7D6E;">${safe.company || "No company"} &middot; ${safe.interest || "No service selected"}</div>
         </div>
 
         <!-- Full details -->
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
           <tr style="border-bottom: 1px solid #EFE9D8;">
             <td style="padding: 10px 0; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #8A7D6E; width: 120px; vertical-align: top;">Email</td>
-            <td style="padding: 10px 0; font-size: 14px;"><a href="mailto:${data.email || ""}" style="color: #5C4A82; text-decoration: none;">${data.email || "Not provided"}</a></td>
+            <td style="padding: 10px 0; font-size: 14px;"><a href="mailto:${safe.email}" style="color: #5C4A82; text-decoration: none;">${safe.email || "Not provided"}</a></td>
           </tr>
           <tr style="border-bottom: 1px solid #EFE9D8;">
             <td style="padding: 10px 0; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #8A7D6E; vertical-align: top;">Company</td>
-            <td style="padding: 10px 0; font-size: 14px;">${data.company || "Not provided"}</td>
+            <td style="padding: 10px 0; font-size: 14px;">${safe.company || "Not provided"}</td>
           </tr>
           <tr style="border-bottom: 1px solid #EFE9D8;">
             <td style="padding: 10px 0; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #8A7D6E; vertical-align: top;">Interested in</td>
-            <td style="padding: 10px 0; font-size: 14px;">${data.interest || "Not specified"}</td>
+            <td style="padding: 10px 0; font-size: 14px;">${safe.interest || "Not specified"}</td>
           </tr>
           <tr>
             <td style="padding: 10px 0; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #8A7D6E; vertical-align: top;">Message</td>
-            <td style="padding: 10px 0; font-size: 14px; line-height: 1.6;">${(data.message || "No message").replace(/\\n/g, "<br>")}</td>
+            <td style="padding: 10px 0; font-size: 14px; line-height: 1.6;">${(safe.message || "No message").replace(/\n/g, "<br>")}</td>
           </tr>
         </table>
 
         <!-- Action buttons -->
         <div style="margin-bottom: 24px;">
-          <a href="mailto:${data.email || ""}?subject=Re: Your inquiry to The Opportunity Designed&body=%0A%0A—%0AAddie Morrow%0AThe Opportunity Designed%0Aadelit amorrow@gmail.com"
+          <a href="mailto:${encodeURIComponent(data.email)}?subject=Re: Your inquiry to The Opportunity Designed&body=%0A%0A—%0AAddie Morrow%0AThe Opportunity Designed%0Aadelit amorrow@gmail.com"
              style="display: inline-block; padding: 12px 24px; background: #5C4A82; color: #ffffff; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; margin-right: 12px;">
             Reply directly
           </a>
@@ -186,6 +257,7 @@ function sendNotification(data, row) {
     "View in tracker: " + sheetUrl,
     {
       htmlBody: html,
+      // data.email is "" unless it passed isValidEmail(), so it can't inject headers
       replyTo: data.email || CONFIG.NOTIFICATION_EMAIL,
       name: "The Opportunity Designed — Inquiry Bot"
     }
@@ -196,7 +268,12 @@ function sendNotification(data, row) {
 // ─── SEND AUTO-CONFIRMATION TO INQUIRY SENDER ───
 
 function sendConfirmation(data) {
-  const firstName = (data.name || "").split(" ")[0] || "there";
+  if (!isValidEmail(data.email)) return;
+
+  const firstName = escapeHtml((data.name || "").split(" ")[0] || "there");
+  const safeInterest = escapeHtml(data.interest);
+  const safeCompany = escapeHtml(data.company);
+  const safeMessage = escapeHtml(data.message);
 
   const subject = "We received your inquiry — The Opportunity Designed";
 
@@ -216,7 +293,7 @@ function sendConfirmation(data) {
         </div>
 
         <p style="font-size: 15px; line-height: 1.7; color: #1C1916; margin-bottom: 20px;">
-          I received your inquiry${data.interest && data.interest !== "Not sure yet" ? " about <strong>" + data.interest + "</strong>" : ""} and will review it personally. You can expect to hear back from me within <strong>${CONFIG.RESPONSE_WINDOW}</strong>.
+          I received your inquiry${safeInterest && safeInterest !== "Not sure yet" ? " about <strong>" + safeInterest + "</strong>" : ""} and will review it personally. You can expect to hear back from me within <strong>${CONFIG.RESPONSE_WINDOW}</strong>.
         </p>
 
         <p style="font-size: 15px; line-height: 1.7; color: #1C1916; margin-bottom: 20px;">
@@ -226,9 +303,9 @@ function sendConfirmation(data) {
         <!-- What you sent -->
         <div style="background: #EFE9D8; border-radius: 6px; padding: 20px; margin-bottom: 24px;">
           <div style="font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #8A7D6E; margin-bottom: 12px;">What you sent</div>
-          ${data.company ? '<div style="font-size: 13px; color: #8A7D6E; margin-bottom: 4px;">' + data.company + '</div>' : ''}
-          ${data.interest ? '<div style="font-size: 13px; color: #8A7D6E; margin-bottom: 12px;">' + data.interest + '</div>' : ''}
-          ${data.message ? '<div style="font-size: 14px; color: #1C1916; line-height: 1.6;">' + data.message.replace(/\n/g, "<br>") + '</div>' : ''}
+          ${safeCompany ? '<div style="font-size: 13px; color: #8A7D6E; margin-bottom: 4px;">' + safeCompany + '</div>' : ''}
+          ${safeInterest ? '<div style="font-size: 13px; color: #8A7D6E; margin-bottom: 12px;">' + safeInterest + '</div>' : ''}
+          ${safeMessage ? '<div style="font-size: 14px; color: #1C1916; line-height: 1.6;">' + safeMessage.replace(/\n/g, "<br>") + '</div>' : ''}
         </div>
 
         <p style="font-size: 15px; line-height: 1.7; color: #1C1916; margin-bottom: 0;">

@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-// --- YOUR DIGITAL SIGNATURES ---
-// Replace the text inside the quotes with your actual Supabase URL and Key
-const supabaseUrl = 'https://wzikhtfkfvulyukvmknt.supabase.co/auth/v1/.well-known/jwks.json';
-const supabaseKey = 'sb_publishable_KQ-xq4UA-8KzZ1_HGmAoeA_Cbux7R2I';
-const supabase = createClient(supabaseUrl, supabaseKey);
+// --- SUPABASE ---
+// Credentials come from the environment (.env.local locally, host env vars in
+// production) so they are never committed. REACT_APP_SUPABASE_URL must be the
+// project URL, e.g. https://<project>.supabase.co
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+const supabaseKey = process.env.REACT_APP_SUPABASE_PUBLISHABLE_KEY;
+const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
+
+// Anyone can call the publishable key, so the bid write below is only as safe as
+// the row-level security policy behind it. See SECURITY.md.
+const AUCTION_ITEM_ID = process.env.REACT_APP_AUCTION_ITEM_ID;
+const BID_INCREMENT = 15;
 
 export default function App() {
   const [bid, setBid] = useState(0); // Starts at 0, will update from database
@@ -14,6 +21,7 @@ export default function App() {
   // Fetch the current bid from your ledger as soon as the gallery opens
   useEffect(() => {
     const fetchAuctionData = async () => {
+      if (!supabase) return;
       const { data, error } = await supabase
         .from('auction_item')
         .select('current_bid')
@@ -33,18 +41,24 @@ export default function App() {
 
   // When a collector clicks PLACE BID, it updates the master ledger
   const handleBid = async () => {
-    const newBid = bid + 15;
-    setBid(newBid); // Updates the screen instantly
+    if (!supabase || !AUCTION_ITEM_ID) return;
+    const newBid = bid + BID_INCREMENT;
 
-    // Sends the new price to Supabase
-    const { error } = await supabase
+    // Scoped to one row and only ever raises the price, so a stale client can't
+    // overwrite every lot or lower a bid.
+    const { data, error } = await supabase
       .from('auction_item')
       .update({ current_bid: newBid })
-      .neq('current_bid', 0); // Safety check to update the row
-      
+      .eq('id', AUCTION_ITEM_ID)
+      .lt('current_bid', newBid)
+      .select('current_bid')
+      .single();
+
     if (error) {
       console.error("Error updating ledger:", error);
+      return;
     }
+    setBid(data.current_bid);
   };
 
   const formatTime = (seconds) => {
