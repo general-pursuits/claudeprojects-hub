@@ -10,40 +10,58 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 export default function App() {
   const [bid, setBid] = useState(0); // Starts at 0, will update from database
   const [timeLeft, setTimeLeft] = useState(3600);
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   // Fetch the current bid from your ledger as soon as the gallery opens
   useEffect(() => {
     const fetchAuctionData = async () => {
-      const { data, error } = await supabase
-        .from('auction_item')
-        .select('current_bid')
-        .limit(1)
-        .single();
+      try {
+        const { data, error: readError } = await supabase
+          .from('auction_item')
+          .select('current_bid')
+          .limit(1)
+          .single();
 
-      if (data) {
+        if (readError) throw new Error(readError.message);
+        if (!data) throw new Error('No auction item found in the ledger.');
         setBid(data.current_bid);
-      }
-      if (error) {
-        console.error("Error reading ledger:", error);
+        setLoaded(true);
+      } catch (e) {
+        console.error('Error reading ledger:', e);
+        setError(`Could not load the current valuation: ${e.message}. Reload to try again.`);
       }
     };
 
     fetchAuctionData();
   }, []);
 
-  // When a collector clicks PLACE BID, it updates the master ledger
+  // When a collector clicks PLACE BID, it updates the master ledger.
+  // The screen only keeps the new price if the ledger actually accepted it.
   const handleBid = async () => {
+    const previousBid = bid;
     const newBid = bid + 15;
-    setBid(newBid); // Updates the screen instantly
+    setBid(newBid); // Optimistic update, reverted below if the write fails
+    setSaving(true);
+    setError('');
 
-    // Sends the new price to Supabase
-    const { error } = await supabase
-      .from('auction_item')
-      .update({ current_bid: newBid })
-      .neq('current_bid', 0); // Safety check to update the row
-      
-    if (error) {
-      console.error("Error updating ledger:", error);
+    try {
+      const { data, error: writeError } = await supabase
+        .from('auction_item')
+        .update({ current_bid: newBid })
+        .neq('current_bid', 0) // Safety check to update the row
+        .select('current_bid');
+
+      if (writeError) throw new Error(writeError.message);
+      if (!data || data.length === 0) throw new Error('the ledger accepted no rows');
+      setBid(data[0].current_bid);
+    } catch (e) {
+      console.error('Error updating ledger:', e);
+      setBid(previousBid); // Never show a bid that was not recorded
+      setError(`Your bid was not recorded (${e.message}). Please try again.`);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -104,14 +122,21 @@ export default function App() {
             </div>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2.5rem', fontSize: '1.75rem', color: '#fff' }}>
-              <span>${bid} USD</span>
+              <span>{loaded ? `$${bid} USD` : '—'}</span>
               <span style={{ color: timeLeft < 300 ? '#ff3333' : '#fff' }}>
                 {formatTime(timeLeft)}
               </span>
             </div>
             
+            {error && (
+              <div style={{ border: '1px solid #ff3333', color: '#ff8888', padding: '0.75rem', marginBottom: '1.5rem', fontSize: '0.8rem', lineHeight: '1.5' }}>
+                {error}
+              </div>
+            )}
+
             <button 
               onClick={handleBid}
+              disabled={!loaded || saving}
               style={{ 
                 width: '100%', 
                 padding: '1.25rem', 
@@ -123,9 +148,10 @@ export default function App() {
                 cursor: 'pointer', 
                 fontWeight: 'bold',
                 letterSpacing: '1px',
-                transition: 'background-color 0.2s ease'
+                transition: 'background-color 0.2s ease',
+                opacity: !loaded || saving ? 0.5 : 1
               }}>
-              PLACE BID (+$15)
+              {saving ? 'RECORDING BID…' : 'PLACE BID (+$15)'}
             </button>
             <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.7rem', color: '#555' }}>
               SECURE GALLERY AUCTION PROTOCOL
