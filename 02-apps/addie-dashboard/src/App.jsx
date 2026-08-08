@@ -15,58 +15,70 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = SUPABASE_URL && SUPABASE_KEY ? createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
-// Stable anonymous user ID — persists in localStorage as identity only
+// ── ERROR HELPERS ──────────────────────────────────────────────────────────────
+// Every failure the user can act on must reach the UI. These helpers keep the
+// message readable while preserving the original error for the console.
+function errMsg(e) {
+  if (!e) return "Unknown error";
+  if (typeof e === "string") return e;
+  return e.message || String(e);
+}
+function report(context, e) {
+  console.error(`${context}:`, e);
+  return `${context}: ${errMsg(e)}`;
+}
+
+// Stable anonymous user ID — persists in localStorage as identity only.
+// Falls back to a session-only ID when storage is unavailable (private mode).
+let storageBlockedReason = "";
 function getUserId() {
-  let id = localStorage.getItem("dashboard_user_id");
-  if (!id) { id = crypto.randomUUID(); localStorage.setItem("dashboard_user_id", id); }
-  return id;
+  try {
+    let id = localStorage.getItem("dashboard_user_id");
+    if (!id) { id = crypto.randomUUID(); localStorage.setItem("dashboard_user_id", id); }
+    return id;
+  } catch (e) {
+    storageBlockedReason = report("Browser storage unavailable — this session will not be remembered locally", e);
+    return crypto.randomUUID();
+  }
 }
 const USER_ID = getUserId();
 
 async function loadFromSupabase() {
   if (!supabase) return null;
-  try {
-    const { data, error } = await supabase
-      .from("dashboard_state")
-      .select("state")
-      .eq("user_id", USER_ID)
-      .maybeSingle(); // returns null instead of error when no row found
-    if (error) { console.warn("Supabase load error:", error.message); return null; }
-    return data?.state || null;
-  } catch (e) { console.warn("Supabase load failed:", e); return null; }
+  const { data, error } = await supabase
+    .from("dashboard_state")
+    .select("state")
+    .eq("user_id", USER_ID)
+    .maybeSingle(); // returns null instead of error when no row found
+  if (error) throw new Error(error.message);
+  return data?.state || null;
 }
 
 async function saveToSupabase(state) {
   if (!supabase) return;
-  try {
-    const { error } = await supabase
-      .from("dashboard_state")
-      .upsert({ user_id: USER_ID, state }, { onConflict: "user_id" });
-    if (error) console.warn("Supabase save error:", error.message);
-  } catch (e) { console.warn("Supabase save failed:", e); }
+  const { error } = await supabase
+    .from("dashboard_state")
+    .upsert({ user_id: USER_ID, state }, { onConflict: "user_id" });
+  if (error) throw new Error(error.message);
 }
 
 async function loadConsultantFromSupabase() {
   if (!supabase) return null;
-  try {
-    const { data, error } = await supabase
-      .from("consultant_settings")
-      .select("settings")
-      .eq("user_id", USER_ID)
-      .maybeSingle(); // returns null instead of error when no row found
-    if (error) { console.warn("Supabase consultant load error:", error.message); return null; }
-    return data?.settings || null;
-  } catch (e) { console.warn("Supabase consultant load failed:", e); return null; }
+  const { data, error } = await supabase
+    .from("consultant_settings")
+    .select("settings")
+    .eq("user_id", USER_ID)
+    .maybeSingle(); // returns null instead of error when no row found
+  if (error) throw new Error(error.message);
+  return data?.settings || null;
 }
 
 async function saveConsultantToSupabase(settings) {
   if (!supabase) return;
-  try {
-    const { error } = await supabase
-      .from("consultant_settings")
-      .upsert({ user_id: USER_ID, settings }, { onConflict: "user_id" });
-    if (error) console.warn("Supabase consultant save error:", error.message);
-  } catch (e) { console.warn("Supabase consultant save failed:", e); }
+  const { error } = await supabase
+    .from("consultant_settings")
+    .upsert({ user_id: USER_ID, settings }, { onConflict: "user_id" });
+  if (error) throw new Error(error.message);
 }
 
 // ── CONSTANTS ──────────────────────────────────────────────────────────────────
@@ -113,10 +125,28 @@ const nowStr = () => new Date().toLocaleDateString("en-US", { month: "short", da
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
 // ── PERSISTENCE ────────────────────────────────────────────────────────────────
-function loadState() { try { const s = localStorage.getItem(STORAGE_KEY); return s ? JSON.parse(s) : null; } catch { return null; } }
-function saveState(d) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch {} }
-function loadConsultant() { try { const s = localStorage.getItem(SETTINGS_KEY); return s ? { ...DEFAULT_CONSULTANT, ...JSON.parse(s) } : DEFAULT_CONSULTANT; } catch { return DEFAULT_CONSULTANT; } }
-function saveConsultant(d) { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(d)); } catch {} }
+// Reads tolerate corrupt/absent data (nothing the user can do about it beyond a
+// reset) but writes throw so callers can tell the user their edit was not saved.
+function loadState() {
+  try { const s = localStorage.getItem(STORAGE_KEY); return s ? JSON.parse(s) : null; }
+  catch (e) { console.error("Local dashboard cache unreadable, starting fresh:", e); return null; }
+}
+function saveState(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+function loadConsultant() {
+  try { const s = localStorage.getItem(SETTINGS_KEY); return s ? { ...DEFAULT_CONSULTANT, ...JSON.parse(s) } : DEFAULT_CONSULTANT; }
+  catch (e) { console.error("Local branding cache unreadable, using defaults:", e); return DEFAULT_CONSULTANT; }
+}
+function saveConsultant(d) { localStorage.setItem(SETTINGS_KEY, JSON.stringify(d)); }
+
+// Normalizes a loaded state blob; throws when it is not a usable dashboard.
+function hydrateState(raw) {
+  if (!raw || typeof raw !== "object") throw new Error("not a dashboard file");
+  if (!Array.isArray(raw.projects) || raw.projects.length === 0) throw new Error("no projects found");
+  return {
+    ...raw,
+    projects: raw.projects.map(p => ({ meetingDate: "", revision: "", confidential: false, clientLogoDataUrl: "", talkingPoints: "", ...p })),
+  };
+}
 
 // ── INLINE EDITORS ─────────────────────────────────────────────────────────────
 function IT({ value, onSave, className = "", wide = false, placeholder = "Click to edit", dark = false }) {
@@ -203,14 +233,26 @@ function BudgetBar({ spent, budget }) {
 }
 
 // ── LOGO UPLOADER ─────────────────────────────────────────────────────────────
-function LogoUploader({ logoDataUrl, onSave, label = "Upload logo", compact = false }) {
+const MAX_LOGO_BYTES = 1_000_000; // logos are inlined as data URLs into saved state
+
+function LogoUploader({ logoDataUrl, onSave, onError, label = "Upload logo", compact = false }) {
   const inputRef = useRef();
+  const [localErr, setLocalErr] = useState("");
+  const fail = (msg) => { setLocalErr(msg); onError?.(msg); };
   const handleFile = (e) => {
     const file = e.target.files?.[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => onSave(ev.target.result);
-    reader.readAsDataURL(file);
     e.target.value = "";
+    setLocalErr("");
+    if (!file.type.startsWith("image/")) { fail(`"${file.name}" is not an image.`); return; }
+    if (file.size > MAX_LOGO_BYTES) { fail(`Logo is ${Math.round(file.size / 1000)} KB — use an image under ${MAX_LOGO_BYTES / 1000} KB so it can be saved.`); return; }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const result = ev.target?.result;
+      if (typeof result === "string" && result) onSave(result);
+      else fail(`Could not read "${file.name}".`);
+    };
+    reader.onerror = () => fail(report(`Could not read "${file.name}"`, reader.error));
+    reader.readAsDataURL(file);
   };
   if (compact) return (
     <div className="flex items-center gap-2">
@@ -221,6 +263,7 @@ function LogoUploader({ logoDataUrl, onSave, label = "Upload logo", compact = fa
           </button>}
       {logoDataUrl && <button onClick={() => onSave("")} className="text-xs text-gray-300 hover:text-red-400">✕</button>}
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+      {localErr && <span className="text-xs text-red-500">{localErr}</span>}
     </div>
   );
   return <div className="flex items-start gap-3">
@@ -230,6 +273,7 @@ function LogoUploader({ logoDataUrl, onSave, label = "Upload logo", compact = fa
     <div className="flex flex-col gap-1 mt-1">
       <button onClick={() => inputRef.current?.click()} className="text-xs text-blue-500 hover:text-blue-700 flex items-center gap-1"><Upload className="w-3 h-3" />{logoDataUrl ? "Replace" : "Upload"}</button>
       {logoDataUrl && <button onClick={() => onSave("")} className="text-xs text-gray-400 hover:text-red-400">Remove</button>}
+      {localErr && <span className="text-xs text-red-500 max-w-48">{localErr}</span>}
     </div>
     <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
   </div>;
@@ -275,33 +319,50 @@ function ConsultantSettings({ consultant, onChange, onClose }) {
   </div>;
 }
 
+// ── ANTHROPIC API ──────────────────────────────────────────────────────────────
+const MISSING_KEY_MSG = "Set VITE_ANTHROPIC_API_KEY in Netlify environment variables to enable AI generation, or type notes manually.";
+
+// Returns the assistant's text, throwing a specific error for every failure mode
+// (missing key, HTTP/API error, empty completion) so callers can tell them apart.
+async function askClaude({ system, prompt, maxTokens }) {
+  const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error(MISSING_KEY_MSG);
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+    body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: maxTokens, system, messages: [{ role: "user", content: prompt }] }),
+  });
+  const body = await res.text();
+  let data;
+  try { data = JSON.parse(body); }
+  catch { throw new Error(`Anthropic API returned an unreadable response (HTTP ${res.status}).`); }
+  if (!res.ok) throw new Error(data?.error?.message || `Anthropic API error (HTTP ${res.status}).`);
+  const text = data.content?.find(b => b.type === "text")?.text?.trim();
+  if (!text) throw new Error("Anthropic API returned no text.");
+  return text;
+}
+
 // ── TALKING POINTS ─────────────────────────────────────────────────────────────
 function TalkingPointsPanel({ proj, talkingPoints, onSave }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const generate = async () => {
     setLoading(true); setError("");
+    const milDone = proj.milestones.filter(m => m.done).length;
+    const openRisks = proj.risks.filter(r => r.flag !== "Green");
+    const openAsks = proj.openAsks.filter(a => !a.done);
     try {
-      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-      if (!apiKey) throw new Error("no key");
-      const milDone = proj.milestones.filter(m => m.done).length;
-      const openRisks = proj.risks.filter(r => r.flag !== "Green");
-      const openAsks = proj.openAsks.filter(a => !a.done);
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514", max_tokens: 700,
-          system: "You are a consulting engagement manager. Generate concise, confident talking points for presenting a project status dashboard to a client. Return 4-5 bullet points as plain text, each starting with '•'. No headers, no markdown, no preamble.",
-          messages: [{ role: "user", content: `Generate talking points:\nProject: ${proj.name}\nClient: ${proj.client}\nRAG: ${proj.rag}\nSummary: ${proj.execSummary || "Not provided"}\nBudget: $${proj.spent.toLocaleString()} of $${proj.budget.toLocaleString()} (${pct(proj.spent, proj.budget)}%)\nMilestones: ${milDone}/${proj.milestones.length} complete\nOpen Risks: ${openRisks.map(r => r.item).join(", ") || "None"}\nOpen Asks: ${openAsks.map(a => a.ask).join(", ") || "None"}\nFocus: what's going well, what needs client attention, next steps, risks to flag.` }]
-        })
+      const text = await askClaude({
+        maxTokens: 700,
+        system: "You are a consulting engagement manager. Generate concise, confident talking points for presenting a project status dashboard to a client. Return 4-5 bullet points as plain text, each starting with '•'. No headers, no markdown, no preamble.",
+        prompt: `Generate talking points:\nProject: ${proj.name}\nClient: ${proj.client}\nRAG: ${proj.rag}\nSummary: ${proj.execSummary || "Not provided"}\nBudget: $${proj.spent.toLocaleString()} of $${proj.budget.toLocaleString()} (${pct(proj.spent, proj.budget)}%)\nMilestones: ${milDone}/${proj.milestones.length} complete\nOpen Risks: ${openRisks.map(r => r.item).join(", ") || "None"}\nOpen Asks: ${openAsks.map(a => a.ask).join(", ") || "None"}\nFocus: what's going well, what needs client attention, next steps, risks to flag.`,
       });
-      const data = await res.json();
-      onSave(data.content?.find(b => b.type === "text")?.text || "");
-    } catch {
-      setError("Set VITE_ANTHROPIC_API_KEY in Netlify environment variables to enable AI generation, or type notes manually.");
+      onSave(text); // only overwrite existing notes when generation actually produced text
+    } catch (e) {
+      setError(e.message === MISSING_KEY_MSG ? MISSING_KEY_MSG : report("Could not generate talking points", e));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
   return <Card className="mb-6">
     <div className="flex items-center justify-between mb-3">
@@ -332,8 +393,20 @@ function exportCSV(proj) {
     ["DECISIONS"], ["Date", "Decision", "Made By"], ...proj.decisions.map(d => [d.date, q(d.decision), d.madeBy]), [],
     ["OPEN ASKS"], ["Ask", "Asked Of", "Due By", "Done"], ...proj.openAsks.map(a => [q(a.ask), a.askedOf, a.dueBy, a.done ? "Yes" : "No"]),
   ];
-  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(new Blob([rows.map(r => r.join(",")).join("\n")], { type: "text/csv" })), download: `${proj.client.replace(/\s+/g, "_")}_${proj.name.replace(/\s+/g, "_")}.csv` });
-  a.click();
+  downloadBlob(new Blob([rows.map(r => r.join(",")).join("\n")], { type: "text/csv" }), `${proj.client.replace(/\s+/g, "_")}_${proj.name.replace(/\s+/g, "_")}.csv`);
+}
+
+// Downloads a blob and releases the object URL. Throws if the browser blocks it.
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  try {
+    const a = Object.assign(document.createElement("a"), { href: url, download: filename });
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } finally {
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  }
 }
 
 function exportExcel(proj) {
@@ -349,7 +422,8 @@ function exportExcel(proj) {
   XLSX.writeFile(wb, `${proj.client.replace(/\s+/g, "_")}_${proj.name.replace(/\s+/g, "_")}.xlsx`);
 }
 
-function exportPPT(proj, updatedAt, consultant) {
+async function exportPPT(proj, updatedAt, consultant) {
+  const warnings = [];
   const pptx = new PptxGenJS();
   pptx.layout = "LAYOUT_WIDE";
   const DARK = "1e2a3a", ACCENT = "3b82f6", LIGHT = "f8fafc", GRAY = "64748b", RED = "dc2626";
@@ -371,8 +445,13 @@ function exportPPT(proj, updatedAt, consultant) {
   let s = pptx.addSlide();
   s.background = { color: DARK };
   confBar(s);
-  if (proj.clientLogoDataUrl) try { s.addImage({ data: proj.clientLogoDataUrl, x: 10.5, y: 0.4 + yOff, w: 2, h: 0.7, sizing: { type: "contain", w: 2, h: 0.7 } }); } catch {}
-  if (consultant.logoDataUrl) try { s.addImage({ data: consultant.logoDataUrl, x: 0.5, y: 0.4 + yOff, w: 2, h: 0.7, sizing: { type: "contain", w: 2, h: 0.7 } }); } catch {}
+  const addLogo = (slide, data, x, label) => {
+    if (!data) return;
+    try { slide.addImage({ data, x, y: 0.4 + yOff, w: 2, h: 0.7, sizing: { type: "contain", w: 2, h: 0.7 } }); }
+    catch (e) { warnings.push(report(`${label} logo could not be embedded in the deck`, e)); }
+  };
+  addLogo(s, proj.clientLogoDataUrl, 10.5, "Client");
+  addLogo(s, consultant.logoDataUrl, 0.5, "Your");
   s.addText(proj.name, { x: 0.5, y: 1.6 + yOff, w: 12, h: 1.1, fontSize: 34, bold: true, color: "FFFFFF" });
   s.addText(proj.client, { x: 0.5, y: 2.75 + yOff, w: 8, h: 0.4, fontSize: 16, color: "94a3b8" });
   const meta = [proj.meetingDate && `Meeting: ${proj.meetingDate}`, proj.revision && `Rev. ${proj.revision}`, `As of ${updatedAt}`].filter(Boolean).join("  ·  ");
@@ -458,7 +537,8 @@ function exportPPT(proj, updatedAt, consultant) {
     footerBar(s);
   }
 
-  pptx.writeFile({ fileName: `${proj.client.replace(/\s+/g, "_")}_${proj.name.replace(/\s+/g, "_")}_status.pptx` });
+  await pptx.writeFile({ fileName: `${proj.client.replace(/\s+/g, "_")}_${proj.name.replace(/\s+/g, "_")}_status.pptx` });
+  return warnings;
 }
 
 function buildClientHTML(proj, updatedAt, consultant) {
@@ -535,9 +615,10 @@ ${proj.decisions.length?`<div class="card" style="margin-bottom:24px"><h2>Decisi
 </div>${confBanner}</body></html>`;
 }
 
+// Throws rather than falling back to the bare page URL — a link that silently
+// carries no project data looks fine but shows the client nothing.
 function buildShareURL(proj) {
-  try { return `${window.location.href.split("?")[0]}?view=${btoa(encodeURIComponent(JSON.stringify({ ...proj, clientLogoDataUrl: "" })))}`; }
-  catch { return window.location.href; }
+  return `${window.location.href.split("?")[0]}?view=${btoa(encodeURIComponent(JSON.stringify({ ...proj, clientLogoDataUrl: "" })))}`;
 }
 
 // ── SHARE MODAL ────────────────────────────────────────────────────────────────
@@ -546,25 +627,74 @@ function ShareModal({ proj, updatedAt, consultant, onClose }) {
   const [emailSent, setEmailSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [emailTo, setEmailTo] = useState("");
-  const shareURL = buildShareURL(proj);
-  const copyLink = () => { navigator.clipboard.writeText(shareURL).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }); };
-  const downloadHTML = () => {
-    const html = buildClientHTML(proj, updatedAt, consultant);
-    Object.assign(document.createElement("a"), { href: URL.createObjectURL(new Blob([html], { type: "text/html" })), download: `${proj.client.replace(/\s+/g,"_")}_${proj.name.replace(/\s+/g,"_")}_status.html` }).click();
-  };
-  const sendEmail = async () => {
-    if (!emailTo.trim()) return; setSending(true);
+  const [error, setError] = useState("");
+  const [warning, setWarning] = useState("");
+
+  let shareURL = "";
+  let shareURLError = "";
+  try { shareURL = buildShareURL(proj); }
+  catch (e) { shareURLError = report("Could not build a share link for this project", e); }
+
+  const copyLink = async () => {
+    setError("");
     try {
-      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-      const res = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" }, body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 600, system: "Draft a concise professional project status email. Return ONLY JSON with keys: subject, body. No markdown.", messages: [{ role: "user", content: `Status email. Project: ${proj.name}. Client: ${proj.client}. RAG: ${proj.rag}. Summary: ${proj.execSummary}. Milestones: ${proj.milestones.filter(m=>m.done).length}/${proj.milestones.length}. Budget: $${proj.spent}/$${proj.budget}. Under 150 words. Sign off as ${consultant.name}.` }] }) });
-      const data = await res.json();
-      const text = data.content?.find(b => b.type === "text")?.text || "";
-      let parsed; try { parsed = JSON.parse(text.replace(/```json|```/g,"").trim()); } catch { parsed = { subject: `${proj.name} — Status Update`, body: text }; }
-      window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(emailTo)}&su=${encodeURIComponent(parsed.subject)}&body=${encodeURIComponent(parsed.body+"\n\nFull dashboard: "+shareURL)}`, "_blank");
-    } catch {
-      window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(emailTo)}&su=${encodeURIComponent(proj.name+" — Status Update")}&body=${encodeURIComponent(proj.execSummary+"\n\nFull dashboard: "+shareURL)}`, "_blank");
+      if (!shareURL) throw new Error(shareURLError);
+      if (!navigator.clipboard) throw new Error("This browser blocks clipboard access — select the link and copy it manually.");
+      await navigator.clipboard.writeText(shareURL);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (e) {
+      setError(report("Could not copy the link", e));
     }
-    setEmailSent(true); setSending(false);
+  };
+
+  const downloadHTML = () => {
+    setError("");
+    try {
+      const html = buildClientHTML(proj, updatedAt, consultant);
+      downloadBlob(new Blob([html], { type: "text/html" }), `${proj.client.replace(/\s+/g,"_")}_${proj.name.replace(/\s+/g,"_")}_status.html`);
+    } catch (e) {
+      setError(report("HTML download failed", e));
+    }
+  };
+
+  const openGmail = (subject, body) => {
+    const win = window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(emailTo)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, "_blank");
+    if (!win) throw new Error("Gmail did not open — allow pop-ups for this site and try again.");
+  };
+
+  const sendEmail = async () => {
+    if (!emailTo.trim()) return;
+    setSending(true); setError(""); setWarning("");
+    const linkLine = shareURL ? "\n\nFull dashboard: " + shareURL : "";
+    let subject = `${proj.name} — Status Update`;
+    let body = proj.execSummary || "";
+    try {
+      const text = await askClaude({
+        maxTokens: 600,
+        system: "Draft a concise professional project status email. Return ONLY JSON with keys: subject, body. No markdown.",
+        prompt: `Status email. Project: ${proj.name}. Client: ${proj.client}. RAG: ${proj.rag}. Summary: ${proj.execSummary}. Milestones: ${proj.milestones.filter(m=>m.done).length}/${proj.milestones.length}. Budget: $${proj.spent}/$${proj.budget}. Under 150 words. Sign off as ${consultant.name}.`,
+      });
+      try {
+        const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
+        subject = parsed.subject || subject;
+        body = parsed.body || text;
+      } catch (e) {
+        // The model answered but not as JSON — usable, so keep the text and say so.
+        body = text;
+        setWarning(report("AI draft was not valid JSON, using its raw text", e));
+      }
+    } catch (e) {
+      // Drafting is optional; fall back to the exec summary but tell the user why.
+      setWarning(e.message === MISSING_KEY_MSG ? `${MISSING_KEY_MSG} Opened Gmail with your executive summary instead.` : report("AI draft failed — opened Gmail with your executive summary instead", e));
+    }
+    try {
+      openGmail(subject, body + linkLine);
+      setEmailSent(true);
+    } catch (e) {
+      setError(report("Could not open Gmail", e));
+    }
+    setSending(false);
   };
   return <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={onClose}>
     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
@@ -573,8 +703,10 @@ function ShareModal({ proj, updatedAt, consultant, onClose }) {
       <div className="text-xs text-gray-400 mb-3">{updatedAt}{proj.revision ? ` · Rev. ${proj.revision}` : ""}</div>
       {proj.confidential && <div className="flex items-center gap-2 p-2 bg-red-50 border border-red-200 rounded-lg mb-3 text-xs text-red-700 font-medium"><AlertTriangle className="w-3.5 h-3.5" />Confidential — watermark on all exports</div>}
       <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg mb-4 text-xs text-amber-700">Internal Notes are excluded. Review Risk Log before sharing.</div>
+      {(error || shareURLError) && <div className="p-3 bg-red-50 border border-red-200 rounded-lg mb-3 text-xs text-red-700">{error || shareURLError}</div>}
+      {warning && <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg mb-3 text-xs text-amber-700">{warning}</div>}
       {[
-        { icon: <Link className="w-4 h-4 text-blue-500" />, title: "Shareable Link", desc: "Read-only snapshot URL.", action: <div className="flex gap-2"><input readOnly value={shareURL} className="flex-1 text-xs border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 text-gray-500 truncate" /><button onClick={copyLink} className={`flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-medium shrink-0 ${copied ? "bg-emerald-500 text-white" : "bg-gray-800 text-white hover:bg-gray-700"}`}>{copied ? <><Check className="w-3.5 h-3.5" />Copied</> : <><Copy className="w-3.5 h-3.5" />Copy</>}</button></div> },
+        { icon: <Link className="w-4 h-4 text-blue-500" />, title: "Shareable Link", desc: "Read-only snapshot URL.", action: <div className="flex gap-2"><input readOnly value={shareURL} placeholder="Unavailable" className="flex-1 text-xs border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 text-gray-500 truncate" /><button onClick={copyLink} disabled={!shareURL} className={`flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-medium shrink-0 disabled:opacity-50 ${copied ? "bg-emerald-500 text-white" : "bg-gray-800 text-white hover:bg-gray-700"}`}>{copied ? <><Check className="w-3.5 h-3.5" />Copied</> : <><Copy className="w-3.5 h-3.5" />Copy</>}</button></div> },
         { icon: <Mail className="w-4 h-4 text-purple-500" />, title: "Send via Gmail", desc: "AI-drafts a status email.", action: <div className="flex gap-2"><input value={emailTo} onChange={e => setEmailTo(e.target.value)} placeholder="client@email.com" className="flex-1 text-xs border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-blue-300" /><button onClick={sendEmail} disabled={sending || !emailTo.trim()} className={`flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-medium shrink-0 ${emailSent ? "bg-emerald-500 text-white" : sending ? "bg-gray-200 text-gray-400" : "bg-purple-600 text-white hover:bg-purple-700"} disabled:opacity-50`}>{emailSent ? "Opened" : sending ? "Drafting…" : <><ExternalLink className="w-3.5 h-3.5" />Gmail</>}</button></div> },
         { icon: <FileDown className="w-4 h-4 text-emerald-500" />, title: "HTML File", desc: "Standalone, opens in any browser. Safe to attach.", action: <button onClick={downloadHTML} className="flex items-center gap-2 w-full justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg transition-colors"><Download className="w-3.5 h-3.5" />Download HTML</button> },
       ].map((s, i) => <div key={i} className="border border-gray-200 rounded-xl p-4 mb-3 last:mb-0">
@@ -636,8 +768,9 @@ const INIT_STATE = { dashTitle: "Project Dashboard", projects: [blankProject(1)]
 export default function App() {
   const [state, setState] = useState(() => {
     const saved = loadState();
-    if (saved) saved.projects = saved.projects.map(p => ({ meetingDate:"", revision:"", confidential:false, clientLogoDataUrl:"", talkingPoints:"", ...p }));
-    return saved || INIT_STATE;
+    if (!saved) return INIT_STATE;
+    try { return hydrateState(saved); }
+    catch (e) { console.error("Saved dashboard was unusable, starting from a blank project:", e); return INIT_STATE; }
   });
   const [consultant, setConsultant] = useState(loadConsultant);
   const [activeId, setActiveId] = useState(state.projects[0]?.id || 1);
@@ -645,22 +778,35 @@ export default function App() {
   const [showShare, setShowShare] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [cloudSynced, setCloudSynced] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [importErr, setImportErr] = useState("");
+  // Persistence and action failures the user needs to know about
+  const [localErr, setLocalErr] = useState(storageBlockedReason);
+  const [cloudErr, setCloudErr] = useState("");
+  const [actionErr, setActionErr] = useState("");
+  const [actionWarn, setActionWarn] = useState("");
+  const lastStateRef = useRef(state);
 
   // Load from Supabase on mount — overrides localStorage if cloud data exists
   useEffect(() => {
-    loadFromSupabase().then(cloudState => {
-      if (cloudState) {
-        cloudState.projects = cloudState.projects.map(p => ({ meetingDate:"", revision:"", confidential:false, clientLogoDataUrl:"", talkingPoints:"", ...p }));
-        setState(cloudState);
-        setActiveId(cloudState.projects[0]?.id);
-        saveState(cloudState); // sync to localStorage as cache
-        setCloudSynced(true);
-      }
-    });
-    loadConsultantFromSupabase().then(s => { if (s) { setConsultant(s); saveConsultant(s); } });
+    loadFromSupabase()
+      .then(cloudState => {
+        if (!cloudState) return;
+        const hydrated = hydrateState(cloudState);
+        setState(hydrated);
+        setActiveId(hydrated.projects[0].id);
+        try { saveState(hydrated); } // localStorage cache
+        catch (e) { setLocalErr(report("Could not cache the cloud dashboard locally", e)); }
+      })
+      .catch(e => setCloudErr(report("Could not load your cloud dashboard — showing the copy saved in this browser", e)));
+    loadConsultantFromSupabase()
+      .then(s => {
+        if (!s) return;
+        setConsultant(s);
+        try { saveConsultant(s); }
+        catch (e) { setLocalErr(report("Could not cache your branding locally", e)); }
+      })
+      .catch(e => setCloudErr(report("Could not load your cloud branding settings", e)));
   }, []);
 
   const { dashTitle, projects, updatedAt } = state;
@@ -671,11 +817,19 @@ export default function App() {
     document.title = proj ? `${proj.name} — ${proj.client}` : "Project Dashboard";
   }, [proj?.name, proj?.client]);
 
+  const persist = (u) => {
+    lastStateRef.current = u;
+    try { saveState(u); setLocalErr(""); } // localStorage cache
+    catch (e) { setLocalErr(report("Could not save to this browser — export a JSON backup", e)); }
+    saveToSupabase(u) // cloud save
+      .then(() => setCloudErr(""))
+      .catch(e => setCloudErr(report("Cloud sync failed — changes are only in this browser", e)));
+  };
+  const retrySync = () => persist(lastStateRef.current);
   const touch = (ns) => {
     const u = { ...ns, updatedAt: nowStr() };
     setState(u);
-    saveState(u); // localStorage cache
-    saveToSupabase(u); // cloud save
+    persist(u);
     setSaved(true); setTimeout(() => setSaved(false), 1500);
   };
   const setProjects = ps => touch({ ...state, projects: ps });
@@ -691,8 +845,44 @@ export default function App() {
   const updAsk = (tid,f,v) => up("openAsks", proj.openAsks.map(a => a.id===tid ? {...a,[f]:v} : a));
   const updMeet = (tid,f,v) => up("meetings", proj.meetings.map(m => m.id===tid ? {...m,[f]:v} : m));
 
-  const exportJSON = () => Object.assign(document.createElement("a"), { href: URL.createObjectURL(new Blob([JSON.stringify(state,null,2)], {type:"application/json"})), download: "dashboard_backup.json" }).click();
-  const importJSON = e => { const file = e.target.files?.[0]; if (!file) return; const r = new FileReader(); r.onload = ev => { try { const p = JSON.parse(ev.target.result); if (!p.projects) throw new Error(); touch(p); setActiveId(p.projects[0]?.id); setShowExport(false); setImportErr(""); } catch { setImportErr("Invalid file."); } }; r.readAsText(file); };
+  // Wraps an export so a failure is shown instead of dying in the console
+  const runExport = async (label, fn) => {
+    setActionErr(""); setActionWarn(""); setShowExport(false);
+    try {
+      const warnings = await fn();
+      if (Array.isArray(warnings) && warnings.length) setActionWarn(warnings.join(" · "));
+    } catch (e) {
+      setActionErr(report(`${label} export failed`, e));
+    }
+  };
+  const exportJSON = () => downloadBlob(new Blob([JSON.stringify(state, null, 2)], { type: "application/json" }), "dashboard_backup.json");
+  const importJSON = e => {
+    const file = e.target.files?.[0]; if (!file) return;
+    e.target.value = "";
+    setImportErr("");
+    const r = new FileReader();
+    r.onload = ev => {
+      try {
+        const imported = hydrateState(JSON.parse(ev.target.result));
+        touch(imported);
+        setActiveId(imported.projects[0].id);
+        setShowExport(false);
+      } catch (err) {
+        setImportErr(report(`Could not import "${file.name}"`, err));
+      }
+    };
+    r.onerror = () => setImportErr(report(`Could not read "${file.name}"`, r.error));
+    r.readAsText(file);
+  };
+
+  const saveBranding = (c) => {
+    setConsultant(c);
+    try { saveConsultant(c); setLocalErr(""); }
+    catch (e) { setLocalErr(report("Could not save your branding to this browser", e)); }
+    saveConsultantToSupabase(c)
+      .then(() => setCloudErr(""))
+      .catch(e => setCloudErr(report("Branding did not reach the cloud — it is only in this browser", e)));
+  };
 
   const milDone = proj.milestones.filter(m => m.done).length;
   const milPct = pct(milDone, proj.milestones.length);
@@ -711,11 +901,32 @@ export default function App() {
         }
       `}</style>
 
-      {showSettings && <ConsultantSettings consultant={consultant} onChange={c => { setConsultant(c); saveConsultant(c); saveConsultantToSupabase(c); }} onClose={() => setShowSettings(false)} />}
+      {showSettings && <ConsultantSettings consultant={consultant} onChange={saveBranding} onClose={() => setShowSettings(false)} />}
       {showShare && <ShareModal proj={proj} updatedAt={updatedAt} consultant={consultant} onClose={() => setShowShare(false)} />}
 
       {/* Confidential banner */}
       {proj.confidential && <ConfidentialBanner />}
+
+      {/* Failure banners — never let a save, sync or export fail quietly */}
+      {(cloudErr || localErr || actionErr || actionWarn) && <div className="print:hidden px-6 py-2 space-y-1">
+        {localErr && <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2">
+          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" /><span className="flex-1">{localErr}</span>
+          <button onClick={() => setLocalErr("")} className="shrink-0"><X className="w-3.5 h-3.5" /></button>
+        </div>}
+        {cloudErr && <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 text-amber-700 text-xs rounded-lg px-3 py-2">
+          <CloudOff className="w-3.5 h-3.5 mt-0.5 shrink-0" /><span className="flex-1">{cloudErr}</span>
+          <button onClick={retrySync} className="shrink-0 font-medium underline">Retry</button>
+          <button onClick={() => setCloudErr("")} className="shrink-0"><X className="w-3.5 h-3.5" /></button>
+        </div>}
+        {actionErr && <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2">
+          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" /><span className="flex-1">{actionErr}</span>
+          <button onClick={() => setActionErr("")} className="shrink-0"><X className="w-3.5 h-3.5" /></button>
+        </div>}
+        {actionWarn && <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 text-amber-700 text-xs rounded-lg px-3 py-2">
+          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" /><span className="flex-1">{actionWarn}</span>
+          <button onClick={() => setActionWarn("")} className="shrink-0"><X className="w-3.5 h-3.5" /></button>
+        </div>}
+      </div>}
 
       {/* Top navigation bar */}
       <div className="bg-slate-800 text-white px-6 py-3 print:hidden sticky top-0 z-40 shadow-lg">
@@ -729,10 +940,11 @@ export default function App() {
               <IT value={dashTitle} onSave={v => touch({ ...state, dashTitle: v })} className="text-sm font-semibold text-white" placeholder="Dashboard Title" dark />
               <div className="text-xs text-slate-400 mt-0.5 hidden sm:flex items-center gap-2">
                 <span>{consultant.name}{consultant.firm ? ` · ${consultant.firm}` : ""}</span>
-                {supabase
+                {supabase && !cloudErr
                   ? <span className="flex items-center gap-1 text-emerald-400"><Cloud className="w-3 h-3" />Cloud sync on</span>
                   : <span className="flex items-center gap-1 text-slate-500"><CloudOff className="w-3 h-3" />Local only</span>}
-                {saved && <span className="text-emerald-400 flex items-center gap-0.5"><Check className="w-3 h-3" />Saved</span>}
+                {saved && !localErr && !cloudErr && <span className="text-emerald-400 flex items-center gap-0.5"><Check className="w-3 h-3" />Saved</span>}
+                {(localErr || cloudErr) && <span className="text-red-400 flex items-center gap-0.5"><AlertTriangle className="w-3 h-3" />Not saved</span>}
               </div>
             </div>
           </div>
@@ -750,15 +962,15 @@ export default function App() {
                 <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Export</p>
                 <div className="space-y-0.5">
                   {[
-                    { label: "CSV", color: "text-gray-400", fn: () => { exportCSV(proj); setShowExport(false); } },
-                    { label: "Excel (.xlsx)", color: "text-emerald-500", fn: () => { exportExcel(proj); setShowExport(false); } },
-                    { label: "PowerPoint (.pptx)", color: "text-orange-500", fn: () => { exportPPT(proj, updatedAt, consultant); setShowExport(false); } },
-                    { label: "PDF (print)", color: "text-red-400", fn: () => { window.print(); setShowExport(false); } },
+                    { label: "CSV", color: "text-gray-400", fn: () => runExport("CSV", () => exportCSV(proj)) },
+                    { label: "Excel (.xlsx)", color: "text-emerald-500", fn: () => runExport("Excel", () => exportExcel(proj)) },
+                    { label: "PowerPoint (.pptx)", color: "text-orange-500", fn: () => runExport("PowerPoint", () => exportPPT(proj, updatedAt, consultant)) },
+                    { label: "PDF (print)", color: "text-red-400", fn: () => runExport("PDF", () => window.print()) },
                   ].map((x, i) => <button key={i} onClick={x.fn} className="flex items-center gap-2 w-full text-sm text-gray-700 hover:bg-gray-50 rounded-lg px-2 py-1.5">
                     <FileText className={`w-3.5 h-3.5 ${x.color}`} />{x.label}
                   </button>)}
                   <hr className="my-2 border-gray-100" />
-                  <button onClick={() => { exportJSON(); setShowExport(false); }} className="flex items-center gap-2 w-full text-sm text-gray-700 hover:bg-gray-50 rounded-lg px-2 py-1.5"><Save className="w-3.5 h-3.5 text-gray-400" />Backup (JSON)</button>
+                  <button onClick={() => runExport("JSON backup", exportJSON)} className="flex items-center gap-2 w-full text-sm text-gray-700 hover:bg-gray-50 rounded-lg px-2 py-1.5"><Save className="w-3.5 h-3.5 text-gray-400" />Backup (JSON)</button>
                   <label className="flex items-center gap-2 w-full text-sm text-gray-700 hover:bg-gray-50 rounded-lg px-2 py-1.5 cursor-pointer"><Upload className="w-3.5 h-3.5 text-gray-400" />Import backup<input type="file" accept=".json" className="hidden" onChange={importJSON} /></label>
                   <button onClick={() => { if (window.confirm("Reset all data?")) { touch(INIT_STATE); setActiveId(INIT_STATE.projects[0].id); setShowExport(false); } }} className="flex items-center gap-2 w-full text-sm text-red-400 hover:bg-red-50 rounded-lg px-2 py-1.5"><RefreshCw className="w-3.5 h-3.5" />Reset all</button>
                 </div>
@@ -820,7 +1032,7 @@ export default function App() {
           <div className="flex items-center gap-4 shrink-0">
             <div className="text-right">
               <div className="text-xs text-gray-400 mb-1.5">Client Logo</div>
-              <LogoUploader logoDataUrl={proj.clientLogoDataUrl} onSave={v => up("clientLogoDataUrl",v)} label="Add logo" compact />
+              <LogoUploader logoDataUrl={proj.clientLogoDataUrl} onSave={v => up("clientLogoDataUrl",v)} onError={setActionErr} label="Add logo" compact />
             </div>
             <label className="flex items-center gap-1.5 cursor-pointer print:hidden">
               <input type="checkbox" checked={proj.confidential} onChange={e => up("confidential",e.target.checked)} className="rounded" />

@@ -25,40 +25,91 @@ const CONFIG = {
 // This runs when someone submits the contact form on your website.
 
 function doPost(e) {
+  var data;
+  var row = null;
+  var warnings = [];
+
+  // Parsing and logging must succeed — if they don't, the inquiry is lost, so the
+  // caller gets an error and the failure is logged with a stack trace.
   try {
-    // Parse the form data
-    const data = JSON.parse(e.postData.contents);
-
-    // Log to sheet
-    const row = logInquiry(data);
-
-    // Send email notification to you
-    sendNotification(data, row);
-
-    // Send auto-confirmation to the inquiry sender
-    if (data.email) {
-      sendConfirmation(data);
-    }
-
-    // Return success (redirects user to thank-you message)
-    return ContentService
-      .createTextOutput(JSON.stringify({ result: "success", row: row }))
-      .setMimeType(ContentService.MimeType.JSON);
-
+    data = parseSubmission(e);
+    row = logInquiry(data);
   } catch (error) {
-    Logger.log("Error: " + error.toString());
-    return ContentService
-      .createTextOutput(JSON.stringify({ result: "error", message: error.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return jsonError("Inquiry could not be logged", error);
   }
+
+  // The inquiry is safely in the sheet now. Email problems are reported as
+  // warnings rather than failing the submission the visitor already made.
+  try {
+    sendNotification(data, row);
+  } catch (error) {
+    warnings.push(logAndDescribe("Notification email to " + CONFIG.NOTIFICATION_EMAIL + " failed", error));
+  }
+
+  if (data.email) {
+    try {
+      sendConfirmation(data);
+    } catch (error) {
+      warnings.push(logAndDescribe("Confirmation email to " + data.email + " failed", error));
+    }
+  } else {
+    warnings.push("No email address submitted — no confirmation sent.");
+  }
+
+  if (warnings.length > 0) {
+    Logger.log("Inquiry logged to row " + row + " with warnings: " + warnings.join(" | "));
+  }
+
+  return ContentService
+    .createTextOutput(JSON.stringify({ result: "success", row: row, warnings: warnings }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+
+// ─── ERROR HELPERS ───
+
+function logAndDescribe(context, error) {
+  var detail = error && error.message ? error.message : String(error);
+  Logger.log(context + ": " + detail + (error && error.stack ? "\n" + error.stack : ""));
+  return context + ": " + detail;
+}
+
+function jsonError(context, error) {
+  var message = logAndDescribe(context, error);
+  return ContentService
+    .createTextOutput(JSON.stringify({ result: "error", message: message }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+
+// ─── PARSE THE SUBMISSION ───
+// Rejects empty or malformed payloads with a message that says what was wrong,
+// instead of failing later with a confusing "cannot read property" error.
+
+function parseSubmission(e) {
+  if (!e || !e.postData || !e.postData.contents) {
+    throw new Error("request had no POST body");
+  }
+  var data;
+  try {
+    data = JSON.parse(e.postData.contents);
+  } catch (error) {
+    throw new Error("request body was not valid JSON: " + error.message);
+  }
+  if (!data || typeof data !== "object") {
+    throw new Error("request body was not a JSON object");
+  }
+  if (!data.name && !data.email && !data.message) {
+    throw new Error("submission had no name, email or message");
+  }
+  return data;
 }
 
 
 // ─── LOG INQUIRY TO SHEET ───
 
 function logInquiry(data) {
-  const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
-  const sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+  const sheet = getTrackerSheet();
 
   // Find next empty row
   const lastRow = sheet.getLastRow();
@@ -99,10 +150,34 @@ function logInquiry(data) {
 }
 
 
+// ─── SHEET ACCESS ───
+// Turns the two common misconfigurations (unset spreadsheet ID, renamed or
+// missing tab) into messages that say how to fix them.
+
+function openTracker() {
+  if (!CONFIG.SPREADSHEET_ID || CONFIG.SPREADSHEET_ID === "YOUR_SPREADSHEET_ID_HERE") {
+    throw new Error("CONFIG.SPREADSHEET_ID is not set — paste the tracker spreadsheet ID into the script's CONFIG block");
+  }
+  try {
+    return SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  } catch (error) {
+    throw new Error("could not open spreadsheet " + CONFIG.SPREADSHEET_ID + " (check the ID and that this account has access): " + error.message);
+  }
+}
+
+function getTrackerSheet() {
+  const sheet = openTracker().getSheetByName(CONFIG.SHEET_NAME);
+  if (!sheet) {
+    throw new Error('no tab named "' + CONFIG.SHEET_NAME + '" in the tracker spreadsheet — rename the tab or update CONFIG.SHEET_NAME');
+  }
+  return sheet;
+}
+
+
 // ─── SEND EMAIL NOTIFICATION ───
 
 function sendNotification(data, row) {
-  const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  const ss = openTracker();
   const sheetUrl = ss.getUrl() + "#gid=0&range=A" + row;
 
   // Build the subject line
@@ -196,6 +271,7 @@ function sendNotification(data, row) {
 // ─── SEND AUTO-CONFIRMATION TO INQUIRY SENDER ───
 
 function sendConfirmation(data) {
+  if (!data.email) throw new Error("no email address to send the confirmation to");
   const firstName = (data.name || "").split(" ")[0] || "there";
 
   const subject = "We received your inquiry — The Opportunity Designed";
@@ -279,9 +355,24 @@ function testSubmission() {
     message: "This is a test submission to verify the workflow is working correctly. You can delete this row from the tracker after confirming."
   };
 
+  // Each step is reported separately so a partial failure is obvious in the log
+  // rather than looking like the whole test failed.
   const row = logInquiry(fakeData);
-  sendNotification(fakeData, row);
-  sendConfirmation(fakeData);
+  Logger.log("Logged test inquiry to row " + row + ".");
+
+  try {
+    sendNotification(fakeData, row);
+    Logger.log("Notification email sent to " + CONFIG.NOTIFICATION_EMAIL + ".");
+  } catch (error) {
+    logAndDescribe("Notification email failed", error);
+  }
+
+  try {
+    sendConfirmation(fakeData);
+    Logger.log("Confirmation email sent to " + fakeData.email + " (bounces since test@example.com isn't real).");
+  } catch (error) {
+    logAndDescribe("Confirmation email failed", error);
+  }
+
   Logger.log("Test complete. Check your email and row " + row + " in the sheet.");
-  Logger.log("Also check " + fakeData.email + " for the auto-confirmation (will go to your inbox since test@example.com isn't real).");
 }
