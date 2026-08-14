@@ -6,6 +6,21 @@ reconcile them (update both). Sections below = one per memory topic file.
 
 ---
 
+## saving-flow (CANONICAL — read before saving ANYTHING)
+
+The hub `/Users/addie/ClaudeProjects/` is a git clone of `github.com/adelitaodm/claudeprojects-hub` (main).
+Every master, reference, or record a session produces MUST be saved into a tracked hub path (under
+`01-projects/`, `02-apps/`, `03-documents/`, `docs/`, or `Projects/`) — never left only in chat or a temp
+folder — and reference records also mirrored to Notion (local repo = source of truth). Then Addie runs
+`sh sync.sh "what changed"` in her Terminal (pull-rebase, commit, push) so everything is current on phone and
+computer. NEVER run git or push through the folder bridge (stale `index.lock` the bridge cannot delete; she
+removes it in Terminal if present). Gitignored / Mac-local by design: `04-archive/`, `02-archive/`,
+`version-archive/`, `snapshots/`, `.remember/`, `deploy-live/` (the live site is its own repo), node_modules,
+.DS_Store. This applies to every session, skill, and automation: produce it, save it in the hub, remind Addie
+to sync.
+
+---
+
 ## website-workflow (CANONICAL — read before ANY website work)
 
 ### Single source of truth
@@ -90,13 +105,14 @@ quantified case metrics not allowed (see no-confidential-metrics).
 
 ---
 
-## project: Framework codification — "Opportunity Blueprint"
+## project: Framework codification — "The Opportunity Blueprint" (NAME APPROVED PUBLIC 2026-08-10)
 
-FRAMEWORK-CODIFICATION.md (rev 2) in website/SEO/ AWAITS her 3 decisions: name ("The Opportunity Blueprint"
-recommended) / opportunity-units Version A-or-B / page location (About section vs /approach). Sequence:
-Map → Design → Build, closing on performance premium. Once decided, ONE verbatim wording everywhere
-(framework page, homepage, llms.txt ## Method, glossary, JSON-LD, directories, Qwoted bio, LinkedIn, Playbook).
-Do not draft variants before her decisions.
+NAME DECIDED: "The Opportunity Blueprint" is APPROVED to go public (Addie, 2026-08-10). The name may now be
+used publicly. Sequence: Map -> Design -> Build, closing on the performance premium. FRAMEWORK-CODIFICATION.md
+(rev 2) in website/SEO/. Two sub-decisions still open before full rollout: opportunity-units Version A-or-B,
+and page location (About section vs a dedicated /approach page). Once those settle, use ONE verbatim wording
+everywhere (framework page, homepage, llms.txt ## Method, glossary, JSON-LD, directories, Qwoted bio, LinkedIn,
+Playbook). Do not finalize the units/location wording before her two remaining calls.
 
 ---
 
@@ -293,7 +309,7 @@ traffic).
 - FREE PLANS ALWAYS: every tool free tier (Cal.com, Zapier 2-step Zaps only ≤100 tasks/mo, HubSpot free,
   Netlify batched deploys approval-first, Gmail aliases). Flag any paid feature and offer the free route first.
 - AI model tiering: cheaper models for simple tasks; strongest for complex work.
-- Reference docs: save locally in hub AND mirror to Notion; local = source of truth.
+- Reference docs: save into the hub repo AND mirror to Notion; local repo = source of truth. After saving, Addie runs `sh sync.sh "msg"` in Terminal to push (phone + computer). Never push via the folder bridge. Archives/deploy-live gitignored (Mac-local).
 - EMAIL RULES: adelitamorrow@gmail.com NEVER business-facing (underlying login only). addie@ = personal human
   channel (lead replies, proposals, signature, 1:1). hello@ = front-door (public contact, generic inbound,
   company-voice/automated). Both forward via ImprovMX to Gmail.

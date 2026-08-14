@@ -65,6 +65,8 @@ site id 773c8bf0-a668-4411-b7d2-966fe82785a7). Clone that repo for site work; dr
 5. If push is rejected, `git pull --rebase` then push. Never force-push.
 
 On Addie's Mac, `/Users/addie/ClaudeProjects` itself is the local clone of this repo:
-pull before working locally, push after (`git pull` / `git push` in that folder, or ask Claude).
+pull before working locally, push after. The one-command way is `sh sync.sh "what changed"`
+(pull-rebase, commit, push) so it lands on phone and computer. Mirror reference records to Notion too
+(the repo stays source of truth). Never push through the folder bridge (stale `index.lock`).
 
 _Migrated to cloud: 2026-08-08. Mac hub retired as master (kept as local mirror + archive home)._
