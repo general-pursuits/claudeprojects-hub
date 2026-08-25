@@ -1,0 +1,208 @@
+/* ============================================================
+   FIELD NOTES - shared article styles
+   ============================================================
+   Append this block to css/index.css, then DELETE the page-scoped
+   <style> block from every existing field note.
+
+   Why this matters: these rules currently live inline in each note,
+   so ten notes means ten copies free to drift. That drift is the
+   reason the template needed rebuilding. Once these are shared,
+   the template is genuinely locked and a style change is one edit.
+
+   Uses the existing :root tokens already in index.css:
+   --bg --paper --ink --ink-soft --ink-faint --ink-dark --line
+   --blue --blue-d --lav --disp --sans --mx
+   ============================================================ */
+
+/* ---- article shell ---- */
+.guide{
+  max-width:74ch;
+  padding:clamp(30px,6vh,64px) var(--mx) clamp(30px,5vh,56px);
+  margin:0 auto;
+}
+
+/* ---- headline ---- */
+.guide-h1{
+  font-family:var(--disp);
+  font-weight:400;
+  text-transform:uppercase;
+  font-size:clamp(2rem,5.2vw,3.6rem);
+  line-height:0.98;
+  letter-spacing:0.005em;
+  margin:14px 0 0;
+  text-wrap:balance;
+}
+
+/* ---- byline ---- */
+.guide-byline{
+  font-size:13px;
+  color:var(--ink-soft);
+  margin:14px 0 0;
+}
+.guide-byline a{
+  color:var(--lav);
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+
+/* ---- short answer : the block AI engines quote ---- */
+.guide-tldr{
+  border-left:3px solid var(--blue);
+  padding:2px 0 2px 22px;
+  margin:clamp(26px,4vh,40px) 0 0;
+  max-width:62ch;
+}
+.guide-tldr-lbl{
+  display:block;
+  font-size:10px;
+  letter-spacing:0.16em;
+  text-transform:uppercase;
+  color:var(--lav);
+  font-weight:600;
+  margin-bottom:8px;
+}
+.guide-tldr p{
+  margin:0;
+  font-size:17px;
+  line-height:1.72;
+}
+
+/* ---- article body ---- */
+.guide-body{
+  margin-top:clamp(30px,5vh,52px);
+}
+.guide-body h2{
+  font-family:var(--disp);
+  font-weight:400;
+  text-transform:uppercase;
+  font-size:clamp(1.4rem,2.8vw,2rem);
+  line-height:1.04;
+  margin:clamp(32px,5vh,52px) 0 14px;
+}
+.guide-body h2:first-child{margin-top:0;}
+.guide-body p{
+  margin:0 0 16px;
+  color:var(--ink);
+}
+.guide-body p:last-child{margin-bottom:0;}
+.guide-body a{
+  color:var(--ink);
+  border-bottom:1px solid var(--blue-d);
+  text-decoration:none;
+  padding-bottom:1px;
+  transition:border-color .3s;
+}
+.guide-body a:hover{border-color:var(--blue);}
+.guide-body ul{
+  margin:0 0 16px;
+  padding-left:20px;
+  display:flex;
+  flex-direction:column;
+  gap:11px;
+}
+.guide-body li{
+  color:var(--ink-soft);
+  font-size:15.5px;
+  line-height:1.7;
+}
+.guide-body li strong{
+  color:var(--ink);
+  font-weight:500;
+}
+.guide-body li::marker{color:var(--blue-d);}
+
+/* ---- related reading ---- */
+.guide-related{
+  max-width:74ch;
+  margin:0 auto;
+  padding:clamp(28px,4.5vh,48px) var(--mx) 0;
+  border-top:1px solid var(--line);
+}
+.guide-related-lbl{
+  font-size:10px;
+  letter-spacing:0.16em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+  font-weight:600;
+  margin:0 0 14px;
+}
+.guide-related ul{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.guide-related a{
+  color:var(--ink);
+  text-decoration:none;
+  border-bottom:1px solid var(--blue-d);
+  padding-bottom:3px;
+  font-size:15px;
+  transition:border-color .3s;
+}
+.guide-related a:hover{border-color:var(--blue);}
+
+/* ---- back link ---- */
+.guide-back{
+  max-width:74ch;
+  margin:clamp(26px,4vh,42px) auto 0;
+  padding:0 var(--mx);
+}
+.guide-back a{
+  font-size:11px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  font-weight:500;
+  color:var(--ink-soft);
+  text-decoration:none;
+  transition:color .3s;
+}
+.guide-back a:hover{color:var(--ink);}
+
+/* ---- footer subscribe row ---- */
+.fn-subscribe-row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+.fn-subscribe label{
+  display:block;
+  font-size:14px;
+  color:var(--ink-soft);
+}
+.fn-subscribe input[type="email"]{
+  flex:1;
+  min-width:200px;
+  background:transparent;
+  border:1px solid var(--line);
+  color:var(--ink);
+  padding:14px;
+  font-family:var(--sans);
+  font-size:14px;
+  border-radius:0;
+}
+.fn-subscribe input[type="email"]::placeholder{color:var(--ink-faint);}
+.fn-subscribe input[type="email"]:focus{
+  outline:none;
+  border-color:var(--blue);
+}
+
+/* ---- BUGFIX : index.css declares `flex-none;` which is not a CSS
+   property, so browsers drop it and the toggle circle squashes when
+   a question runs long. Correct declaration below. ---- */
+.qa .qx{flex:none;}
+
+/* ---- accessibility ---- */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+input:focus-visible{
+  outline:2px solid var(--blue);
+  outline-offset:2px;
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none !important;}
+}

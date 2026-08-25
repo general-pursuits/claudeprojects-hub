@@ -2,6 +2,10 @@
 
 Project home for building and operating a hyperlocal dog-walking business serving Westgate, Paperbox, Zephyr, and nearby Downtown Salt Lake City residences.
 
+> **Operational source of truth:** [The Baddie Pack — Master Operations Hub](https://app.notion.com/p/3c7166342f4781458152f4460378201a?pvs=204)
+>
+> Notion is the current cloud master for launch tasks, operating templates, client records, and brand/file links. The files in this local folder are a reference snapshot and should not be treated as the current operational version unless the Notion hub says otherwise.
+
 ## Current concept
 
 - **Business:** The Baddie Pack
