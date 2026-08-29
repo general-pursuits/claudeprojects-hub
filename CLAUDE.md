@@ -16,10 +16,11 @@ not the master. The original Mac-era rules file is kept as `CLAUDE-original-mac.
    or rely on git history. Nothing is ever deleted.
 4. **Archives are reference-only.** `04-archive/`, `02-archive/`, `version-archive/`, and
    `snapshots/` folders stay on Addie's Mac and are NOT in this repo. Never recreate them here.
-5. **Read `docs/claude-context/PROJECT-MEMORY.md` before starting work.** It carries every
-   standing rule (brand voice, banned words, free-plans rule, case-study sensitivities,
-   approval workflows). Desktop sessions also have live project memory; this file is the
-   synced copy for phone/web sessions.
+5. **Read `docs/claude-context/CORE-RULES.md` FIRST, every session.** It is the tiny always-load
+   layer: non-negotiables, danger list, saving flow, output pipeline, tracking manifest, and a Router.
+   Load `PROJECT-MEMORY.md` and other deep docs ONLY when the Router says the task needs them.
+   Settled decisions are in `DECISIONS.md` (do not re-ask). Desktop sessions also have live project
+   memory; these files are the synced copy for phone/web sessions.
 
 ## The master-file rule
 
@@ -72,7 +73,7 @@ Three repos total, all on the same account:
 ## Session workflow (every cloud session)
 
 1. `git clone https://github.com/<owner>/<repo>.git` (or `git pull` if already cloned this session)
-2. Read this file + `docs/claude-context/PROJECT-MEMORY.md`
+2. Read this file + `docs/claude-context/CORE-RULES.md` (load deeper docs on demand per its Router)
 3. Edit masters in place; get Addie's approval per the standing rules
 4. `git add -A && git commit -m "what changed" && git push`
 5. If push is rejected, `git pull --rebase` then push. Never force-push.

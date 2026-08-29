@@ -1,5 +1,7 @@
 # Opportunity Designed — Master Brand & Cowork Reference
 
+> Canonical homes: public facts -> BACKLINKS-KIT.md; brand voice/visuals -> the Playbook.docx; SEO -> SEO-COMPETITIVE-LANDSCAPE.md; operating rules -> docs/claude-context/CORE-RULES.md. This doc mirrors, it does not own.
+
 **Version 3 · 2026-08-03.** The current, consolidated reference for Opportunity Designed: brand system, operating rules, reference facts, project status, and every system built in Cowork. Brand language in this version is pulled from the live site (opportunitydesigned.com). Source of truth stays local (the Playbook docx plus live-site CSS); this mirrors them. Kept on your voice rules: plain sentences, no em dashes.
 
 ---

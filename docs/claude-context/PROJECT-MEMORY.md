@@ -2,7 +2,7 @@
 
 Source: Claude desktop project memory. Desktop sessions keep the live memory; this file is the
 synced copy so phone/web sessions carry the same rules. If desktop memory and this file drift,
-reconcile them (update both). Sections below = one per memory topic file.
+reconcile them (update both). Sections below = one per memory topic file. This is the DEEP store: the always-load layer is docs/claude-context/CORE-RULES.md; load sections here on demand per its Router. Settled decisions are in DECISIONS.md (do not re-ask).
 
 ---
 
