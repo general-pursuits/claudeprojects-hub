@@ -71,6 +71,7 @@ save + sync -> capture any follow-up as a Task -> log the manifest line.
 - Client delivery / proposals / case studies / leads -> the opportunity-designed plugin skills (od-*)
 - Notion databases / schema / templates -> PROJECT-MEMORY.md "Notion workspace" section
 - Automations / email / booking / Zaps -> PROJECT-MEMORY.md "Operations, tools & accounts"
+- Scraping / lead sourcing / live SERP / competitor + social research -> APIFY-MCP.md (paid per run: cap it)
 - Settled decisions (do NOT re-ask) -> DECISIONS.md
 - Full standing rules (depth) -> docs/claude-context/PROJECT-MEMORY.md
 - Where files live / which is master -> CLAUDE.md + MASTER_FILES.md
