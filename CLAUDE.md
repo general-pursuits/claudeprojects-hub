@@ -27,13 +27,26 @@ not the master. The original Mac-era rules file is kept as `CLAUDE-original-mac.
 2. To revise something, edit the master in place, commit, push. Git history is the snapshot.
 3. If you can't tell which file is the master, ask rather than guess.
 
-## The website is a SEPARATE repo
+## Website source lives in SEPARATE repos
 
 The live site source is **NOT here**. `01-projects/opportunity-designed/01-current/website/deploy-live/`
 lives in its own repo: **github.com/adelitaodm/opportunity-designed** (main → Netlify auto-deploy,
 site id 773c8bf0-a668-4411-b7d2-966fe82785a7). Clone that repo for site work; drafts still start in
 `website/working-drafts/` here. Publish flow and rules: `docs/claude-context/PROJECT-MEMORY.md`
 (website-workflow section) + `website/HOW-TO-DEPLOY.md`.
+
+**The Baddie Pack** site has its own repo too: **github.com/adelitaodm/theBaddiePackWebsite**
+(private). It was empty until 2026-08-29 and now holds a scaffold only — no site built yet.
+Brand, service model, safety rules, and the approved website brief stay here in
+`Projects/the-baddie-pack/01-current/`; only site code goes in that repo.
+
+Three repos total, all on the same account:
+
+| Repo | Holds |
+|---|---|
+| `claudeprojects-hub` | this hub — all masters, briefs, standing rules |
+| `opportunity-designed` | opportunitydesigned.com live site source |
+| `theBaddiePackWebsite` | The Baddie Pack site source (scaffold stage) |
 
 ## Where things live
 
@@ -50,7 +63,7 @@ site id 773c8bf0-a668-4411-b7d2-966fe82785a7). Clone that repo for site work; dr
 │   ├── jewelry/              ← jewelry brand (terse voice) + digital-gallery app
 ├── 02-apps/                  ← addie-dashboard (React/Vite), my-plugin
 ├── 03-documents/resume/      ← Addie's resume
-├── Projects/                 ← misc session outputs (small)
+├── Projects/                 ← the-baddie-pack/ (dog-walking project) + misc session outputs
 ├── docs/claude-context/      ← PROJECT-MEMORY.md (all standing rules) — READ FIRST
 ├── CLAUDE.md                 ← this file
 └── MASTER_FILES.md           ← authoritative index of every master file
