@@ -1,0 +1,173 @@
+# ============================================================
+#  BRAND CONFIG :: Opportunity Designed  (worked example)
+#  This is the keystone filled in for a real, live business.
+#  Copy BRAND-CONFIG-TEMPLATE.yml and fill it like this.
+# ============================================================
+
+meta:
+  slug: opportunity-designed
+  status: live
+  created: 2026-06-01
+
+identity:
+  name: Opportunity Designed
+  legal_name: Opportunity Designed
+  tagline: Opportunity. Designed.
+  operative_line: Opportunity doesn't appear. It's built.
+  descriptor: >
+    Growth strategy for consumer brands and the businesses that sell them.
+    Architecting unconventional pathways to familiar goals.
+  founder: Addie Morrow
+  founder_title: Independent Business Consultant
+  domain: opportunitydesigned.com
+  location: Salt Lake City, UT
+  remote: true
+
+positioning:
+  what_it_does: >
+    Strategy consulting for consumer brands and the businesses that sell them:
+    smarter purchasing, sharper positioning, market access.
+  icp:
+    - Consumer brand founders
+    - Retail operators and buyers
+    - Marketplaces and sellers
+  differentiator: Operator first, consultant second. A decade in the buyer's seat.
+  offer_ladder:
+    - name: Project Fit Call
+      price: no-cost (never call it "free")
+      note: 20-minute intro conversation
+    - name: Opportunity Review
+      price: $450
+      note: 75-min working session + ranked written readout in 3 business days + one follow-up question
+    - name: Defined growth project
+      price: scoped
+      note: priced on scope, not hours
+    - name: Operational buildout
+      price: scoped
+    - name: Ongoing advisory
+      price: retainer
+  pillars:
+    - Strategy
+    - Buying, Merchandising & Negotiations
+    - Operations
+    - Market Access
+    - Events
+
+voice:
+  one_word: Clear
+  register: >
+    Warm and confident. A senior operator talking straight to a founder.
+    Plain sentences, one idea each. Benefit-led, first person. Contractions fine.
+  words_to_own: [own your category, lead the pace, built, de-risk, architecting, category, performance premium, market access]
+  banned_words: [free, honest, gut check, "never / always (absolutes)"]
+  banned_punctuation: ["em dash (—) in body text"]
+  do:
+    - Lead with the outcome the client gets, then how you get them there.
+    - Name what a thing does, plainly.
+  dont:
+    - No buzzwords, hype, or triple-item filler lists.
+    - No em dashes in body copy.
+  references: [Satisfy Running, milerrunning]
+
+visual:
+  colors:
+    ground_dark:  "#2F2D2A"   # warm charcoal
+    ground_light: "#ECE7DD"   # parchment
+    ink_on_dark:  "#EDEAE3"
+    ink_on_light: "#1A1714"
+    accent:       "#8E72C6"   # violet
+    accent_hover: "#6B4FA6"
+    accent_label: "#B49CE0"   # lavender
+    muted:        "#6B655B"
+  fonts:
+    display: Anton    # weight 400, always uppercase
+    body: Inter       # weights 300-700
+    mono: ""
+  mark:
+    description: A cloud, an inkblot, and a fingerprint, all at once.
+    meaning:
+      Cloud: See what others miss.
+      Inkblot: Value what others overlook.
+      Fingerprint: Own what's unmistakably yours.
+    files: 01-current/mark/
+
+contact:
+  email_personal:  addie@opportunitydesigned.com
+  email_frontdoor: hello@opportunitydesigned.com
+  email_private:   adelitamorrow@gmail.com    # login/ops only, never public
+  forwarding: ImprovMX
+  social:
+    linkedin_company: https://www.linkedin.com/company/opportunity-designed
+    instagram: https://www.instagram.com/opportunitydesigned
+    facebook: https://www.facebook.com/profile.php?id=61592289538905
+    google_business: https://maps.google.com/?cid=17178284747974895122
+    other: []
+
+proof:
+  case_studies:
+    - name: Norda
+      line: From niche favorite to top brand in the category, at full price.
+    - name: Fubuki
+      line: First major US online retailer to carry Fubuki; the proof that reset the category's direction.
+    - name: SkyZone SkyCon
+      line: A three-day franchise owner conference, multi-team, run without a hitch, year after year.
+  testimonials:
+    - quote: You see things other people don't.
+      attribution: a client of Opportunity Designed (kept anonymous)
+  credentials:
+    - Senior Buyer, footwear, Backcountry
+    - Director of Purchasing, New World Natural Brands
+    - Buyer, ModCloth
+    - BA Marketing Communications, Columbia College Chicago
+
+platforms:
+  github_owner: adelitaodm
+  netlify_site: opportunity-designed
+  analytics_ga4: G-M1FVLM07Z1
+  crm: HubSpot
+  booking: Cal.com
+  automation: Zapier
+
+growth:
+  owned_terms: [performance premium]
+  content_home: /field-notes/
+  publish_checklist: "5-place: article file, hub page, sitemap.xml, llms.txt, cross-links"
+
+# --- Approval, exports & audit (added 2026-08-29) ---
+
+assets:
+  export_root: 01-current/brand identity/exports/
+  swatches:
+    formats: [png, svg, ase, css, json]
+  fonts:
+    local_copies: 01-current/brand identity/exports/fonts/
+    licenses:
+      Anton: {license: SIL Open Font License 1.1, source_url: https://fonts.google.com/specimen/Anton}
+      Inter: {license: SIL Open Font License 1.1, source_url: https://fonts.google.com/specimen/Inter}
+  logo:
+    local_copies: 01-current/mark/exports/
+    naming: "<slug>-logo-<type>-<color>-<size>.<ext>"
+    # e.g. opportunity-designed-logo-primary-full-512.png
+    #      opportunity-designed-logo-mark-mono-dark-32.png
+    #      opportunity-designed-logo-wordmark-reversed-master.svg
+
+website_fonts:
+  self_host: true          # Anton + Inter self-hosted; visitors won't have Anton installed
+  formats: [woff2]
+  subset: latin
+  max_weights: 3           # Inter 400 + 600 + Anton 400. Drop 300/500/700 from the site.
+  display_as_svg: false
+  preload: [inter-400]
+
+llm_sources:
+  reference_doc: 01-current/brand identity/Opportunity-Designed-Brand-Quick-Reference.html
+  registered: []           # fill when added, e.g. {assistant: Claude, structure: project, name: Opportunity Designed, date: 2026-08-29}
+
+audit:
+  cadence: monthly
+  scope: [llm_history, website, social_profiles, file_repository]
+  update_rule: changes_only
+  token_budget: minimal
+  log_to:
+    - _brand-system/brands-registry.md
+    - Notion Build Registry (Opportunity Designed row)

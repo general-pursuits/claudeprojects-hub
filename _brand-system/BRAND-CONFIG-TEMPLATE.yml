@@ -1,0 +1,158 @@
+# ============================================================
+#  BRAND CONFIG  ::  the keystone.
+#  Fill this out ONCE per business. Every generator and
+#  automation reads from this file, so "swap the brand"
+#  means editing values here, never touching the procedures.
+#
+#  A filled worked example lives at:
+#    examples/brand-config-opportunity-designed.yml
+#
+#  Anything you leave blank, the generators will ask about
+#  or flag as a FILL-IN. Keep the em-dash rule: no "—" in
+#  copy fields unless a brand explicitly allows it.
+# ============================================================
+
+meta:
+  slug:            # kebab-case; becomes the folder + repo name, e.g. acme-supply
+  status: idea     # idea | building | live
+  created:         # YYYY-MM-DD
+
+identity:
+  name:
+  legal_name:      # if different from name (LLC, Inc.)
+  tagline:         # the signature line
+  operative_line:  # the working one-liner used across the site/footer
+  descriptor:      # one or two sentences: what it is, who it serves
+  founder:
+  founder_title:
+  domain:
+  location:
+  remote: true
+
+positioning:
+  what_it_does:    # plain sentence
+  icp:             # who you target (list)
+    -
+  differentiator:  # the one thing only this business can say
+  offer_ladder:    # entry offer first → deepest last
+    - name:
+      price:
+      note:
+  pillars:         # service / product areas (list)
+    -
+
+voice:
+  one_word:        # the voice in a single word
+  register:        # 1-2 sentences describing the tone
+  words_to_own: [] # terms to lean on
+  banned_words: [] # words to avoid (e.g. free, honest, gut check)
+  banned_punctuation: []   # e.g. "em dash (—)"
+  do:
+    -
+  dont:
+    -
+  references: []   # brands/voices this one is modeled after
+
+visual:
+  colors:          # hex tokens
+    ground_dark:
+    ground_light:
+    ink_on_dark:
+    ink_on_light:
+    accent:
+    accent_hover:
+    accent_label:
+    muted:
+  fonts:
+    display:
+    body:
+    mono:          # optional
+  mark:
+    description:   # one line on what the mark is
+    meaning: {}    # symbol: line  (e.g. Cloud: See what others miss.)
+    files:         # path to the logo/mark library
+
+contact:
+  email_personal:  # signed-by-a-person channel
+  email_frontdoor: # company-voice channel
+  email_private:   # login/ops only, NEVER shown publicly
+  forwarding:      # e.g. ImprovMX
+  social:
+    linkedin_company:
+    instagram:
+    facebook:
+    google_business:
+    other: []
+
+proof:
+  case_studies:
+    - name:
+      line:
+  testimonials:
+    - quote:
+      attribution:
+  credentials:
+    -
+
+platforms:         # used by the launch checklist + automations
+  github_owner:
+  netlify_site:
+  analytics_ga4:
+  crm:
+  booking:
+  automation:
+
+growth:
+  owned_terms: []  # entity terms to win in AI answers + search
+  content_home:    # blog/notes path, e.g. /field-notes/
+  publish_checklist:   # e.g. "5-place: article, hub, sitemap, llms.txt, cross-links"
+
+# ============================================================
+#  APPROVAL, EXPORTS & AUDIT  (added 2026-08-29)
+#  These drive the brand-approval flow and the monthly audit.
+#  Procedures: procedures/brand-approval-flow.md
+#              procedures/monthly-brand-audit.md
+# ============================================================
+
+assets:
+  export_root: 01-current/brand identity/exports/   # local copies land here on approval
+  swatches:
+    formats: [png, svg, ase, css, json]  # ase = Adobe swatch exchange; css/json = tokens
+  fonts:
+    local_copies: 01-current/brand identity/exports/fonts/  # the actual font files, for the user's machine
+    licenses:            # per font: name -> {license, source_url}. Fill before self-hosting.
+  logo:
+    local_copies: 01-current/mark/exports/
+    # filenames MUST encode every identifier, in this order:
+    naming: "<slug>-logo-<type>-<color>-<size>.<ext>"
+    # type:  primary | mark | wordmark | stacked | horizontal
+    # color: full | mono-dark | mono-light | reversed
+    # size:  16 | 32 | 180 | 512 | master   (px; 'master' = vector source)
+    # ext:   svg (master) | png (raster) | ico (favicon)
+
+website_fonts:
+  # integrate fonts into the site only if visitors are unlikely to have them.
+  # keep the uploaded payload as small as possible so the site stays fast.
+  self_host: true          # host the files yourself vs. a webfont CDN
+  formats: [woff2]         # WOFF2 only (smallest). Add woff only for legacy support.
+  subset: latin            # ship only the glyphs used (subset), not the full face
+  max_weights: 3           # hard cap on weight files uploaded
+  display_as_svg: false    # a display face used in only a few headings? render those as SVG, ship no font
+  preload: []              # preload only the one or two critical weights
+
+llm_sources:
+  # the brand reference registered as knowledge inside each assistant.
+  # the approval flow PROMPTS to do this once fonts+colors are locked, and records it here.
+  reference_doc:           # canonical brand reference the assistants read (path or link)
+  registered: []           # list of: {assistant, structure, name, date}
+    #   assistant: Claude | ChatGPT | Gemini | ...
+    #   structure: project | space | custom-GPT | gem | chat   (that LLM's container type)
+    #   name:      the project/space it was added to
+    #   date:      YYYY-MM-DD
+
+audit:
+  cadence: monthly
+  scope: [llm_history, website, social_profiles, file_repository]
+  update_rule: changes_only   # touch nothing unless a real change is found
+  token_budget: minimal       # fetch diffs, skip unchanged sources, no full re-reads
+  log_to: []                  # trackers that record each review (e.g. Notion Build Registry row, brands-registry.md)
