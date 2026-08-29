@@ -1,31 +1,40 @@
 # Apify MCP — setup and house rules
 
-What it is: Apify's hosted MCP server (`https://mcp.apify.com/`), reached through `npx mcp-remote`.
-It gives a Claude session direct access to Apify Actors — scrapers for search, maps, social, and
-web crawling — without leaving the chat.
+What it is: Apify's hosted MCP server at `https://mcp.apify.com/`, connected over native HTTP
+transport. It gives a Claude session direct access to Apify Actors — scrapers for search, maps,
+social, and web crawling — without leaving the chat.
 
 ## The config
 
-Project-scoped MCP config lives in `.mcp.json` at the root of each repo. Claude Code reads it on
-session start and prompts for approval the first time.
+Project-scoped MCP config lives in `.mcp.json` at the root of all three repos, so any session that
+clones one picks it up. Claude Code reads it on session start and prompts for approval the first time.
 
 ```json
 {
   "mcpServers": {
     "apify": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "mcp-remote",
-        "https://mcp.apify.com/?tools=actors,docs,<actor list>"
-      ]
+      "type": "http",
+      "url": "https://mcp.apify.com/"
     }
   }
 }
 ```
 
-The `?tools=` list preloads a fixed set of Actors so the session sees them as callable tools
-instead of having to search the Apify store first. Current list:
+To add it to a repo that does not have it yet, from that repo:
+
+    claude mcp add apify "https://mcp.apify.com/" -t http -s project
+
+Without `-s project` it lands in local config (`~/.claude.json`, that machine only) instead of a
+committed `.mcp.json`.
+
+Do NOT use the older `npx mcp-remote` stdio form. Native HTTP is the supported transport and does
+not put a shell command in a committed file.
+
+### Which Actors are available
+
+The bare URL exposes Apify's own discovery tools, so a session can search the Actor store and call
+any Actor on demand. Appending `?tools=actors,docs,<actor>,<actor>` to the URL instead preloads a
+fixed set as first-class tools, which saves a discovery step. The Actors worth reaching for here:
 
 | Actor | Use |
 |---|---|
@@ -45,14 +54,21 @@ instead of having to search the Apify store first. Current list:
 
 ## Authentication — Addie does this, not Claude
 
-The hosted server needs an Apify account. Two ways in:
+The hosted server needs an Apify account. Until it is authorized, `claude mcp list` reports
+`apify: ... - ! Needs authentication` and no Apify tools are callable. Two ways in:
 
-1. **OAuth** — the default. On first connect, `mcp-remote` opens a browser to authorize Apify.
-   Per CORE-RULES, Claude never grants OAuth. Addie clicks through this once, on her machine.
-   It does not work in a cloud/phone session with no browser.
-2. **API token** — put the Apify token in the environment as `APIFY_TOKEN` and pass it as a
-   header, which is what a headless or cloud session needs. Check Apify's current MCP docs for the
-   exact header form before relying on it.
+1. **OAuth** — the default. Run `/mcp` in an interactive session, pick apify, and authorize in the
+   browser. Per CORE-RULES, Claude never grants OAuth: Addie clicks through this once, on her Mac.
+   It cannot work in a cloud or phone session, which has no browser.
+2. **API token** — for headless and cloud sessions, pass the Apify token as an auth header when
+   adding the server:
+
+       claude mcp add apify "https://mcp.apify.com/" -t http -s project \
+         -H 'Authorization: Bearer ${APIFY_TOKEN}'
+
+   Single quotes matter. They write the literal `${APIFY_TOKEN}` into `.mcp.json`, which Claude Code
+   expands from the environment at load time. Double quotes would expand it in the shell first and
+   commit the live token into the repo.
 
 Never paste the token into `.mcp.json`, a commit, or a chat. It is a credential; it lives in the
 environment only.
