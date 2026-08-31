@@ -1,5 +1,5 @@
 #!/bin/bash
-# One-command sync for ~/ClaudeProjects <-> GitHub (adelitaodm/claudeprojects-hub)
+# One-command sync for ~/ClaudeProjects <-> GitHub (general-pursuits/claudeprojects-hub)
 # Run after working on files on this Mac:  sh sync.sh "what changed"
 # Safe to run any time. Pulls the latest first, then sends your changes up.
 set -e

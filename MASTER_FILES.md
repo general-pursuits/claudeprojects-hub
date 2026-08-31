@@ -95,7 +95,7 @@ System Settings → Apple ID → iCloud → iCloud Drive → Options.
 
 Moved out of `01-current/` (reversible; nothing deleted):
 
-- **website/page-build/** — retired build system (`build_site.py`, `assets_new.py`, `build_docx.js`). The site now deploys ONLY from `website/deploy-live/` (git → GitHub `adelitaodm/opportunity-designed` → Netlify; see `website/HOW-TO-DEPLOY.md`). Unpublished drafts live in `website/working-drafts/`.
+- **website/page-build/** — retired build system (`build_site.py`, `assets_new.py`, `build_docx.js`). The site now deploys ONLY from `website/deploy-live/` (git → GitHub `general-pursuits/opportunityDesigned-website` → Netlify; see `website/HOW-TO-DEPLOY.md`). Unpublished drafts live in `website/working-drafts/`.
 - **website/css, js, fonts, images (root duplicates)** — `deploy-live/` carries its own self-contained copies.
 - **website/content-drafts, master-web-copy.docx** — superseded draft copy.
 - **website/__pycache__, _deploy_tmp, _to_delete, ~$…docx lock files, Screenshot*.png** — temp/junk.

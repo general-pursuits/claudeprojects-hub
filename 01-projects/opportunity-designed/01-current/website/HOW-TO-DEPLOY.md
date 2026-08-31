@@ -7,7 +7,7 @@ _Last updated: July 28, 2026_
 1. Open Terminal
 2. Run:
 
-    cd ~/ClaudeProjects/Projects/opportunity-designed/01-current/website/deploy-live
+    cd ~/ClaudeProjects/01-projects/opportunity-designed/01-current/website/deploy-live
     sh publish.sh "describe what changed"
 
 3. Wait 1–2 minutes, then check https://opportunitydesigned.com (hard-refresh with Cmd+Shift+R if it looks stale)
@@ -16,8 +16,8 @@ That's the whole process. The script commits your changes, pushes them to GitHub
 
 ## How the pipeline works
 
-- The website files live in: `~/ClaudeProjects/Projects/opportunity-designed/01-current/website/deploy-live`
-- That folder is a git repository connected to GitHub: `github.com/adelitaodm/opportunity-designed`
+- The website files live in: `~/ClaudeProjects/01-projects/opportunity-designed/01-current/website/deploy-live`
+- That folder is a git repository connected to GitHub: `github.com/general-pursuits/opportunityDesigned-website`
 - Netlify watches the `main` branch — every push automatically builds and publishes the live site
 - Every publish is a git commit, so full version history lives in GitHub (view, compare, or restore any version)
 
@@ -70,7 +70,7 @@ Every new article touches five places. Miss one and the article is live but invi
 
 **The easy way:** give Claude a draft or a topic, and ask it to follow this checklist. Review the mockup it sends, approve, then run publish.sh.
 
-**Drafts first:** every work-in-progress page is saved in `~/ClaudeProjects/Projects/opportunity-designed/01-current/website/working-drafts/` (field-notes drafts in its `field-notes/` subfolder). Nothing in that folder is public. Only after approval does a draft move into `deploy-live` — so `working-drafts` always holds the most recent unpublished version, and `deploy-live` always mirrors exactly what's live.
+**Drafts first:** every work-in-progress page is saved in `~/ClaudeProjects/01-projects/opportunity-designed/01-current/website/working-drafts/` (field-notes drafts in its `field-notes/` subfolder). Nothing in that folder is public. Only after approval does a draft move into `deploy-live` — so `working-drafts` always holds the most recent unpublished version, and `deploy-live` always mirrors exactly what's live.
 
 1. **The article file** — `field-notes/your-slug.html`, built from the existing article template (copy the structure of an existing note):
    - Title tag under 60 characters; meta description under 155

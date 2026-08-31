@@ -169,7 +169,7 @@ Project root: `/Users/addie/ClaudeProjects/Projects/opportunity-designed/`. `01-
 
 ## Website (finished and live)
 
-Complete multi-page site at opportunitydesigned.com. Core pages, offer funnel, a Field Notes hub with 10 articles, and SEO plumbing (sitemap 17 URLs, llms.txt, robots.txt). Deploy is one command she runs: `sh publish.sh "msg"` inside `deploy-live/` (a git repo to GitHub `adelitaodm/opportunity-designed`, Netlify auto-build). Rollback via Netlify. page-build/ and build_site.py are legacy. Primary CTA sitewide: "Book a 20-minute Project Fit Call."
+Complete multi-page site at opportunitydesigned.com. Core pages, offer funnel, a Field Notes hub with 10 articles, and SEO plumbing (sitemap 17 URLs, llms.txt, robots.txt). Deploy is one command she runs: `sh publish.sh "msg"` inside `deploy-live/` (a git repo to GitHub `general-pursuits/opportunityDesigned-website`, Netlify auto-build). Rollback via Netlify. page-build/ and build_site.py are legacy. Primary CTA sitewide: "Book a 20-minute Project Fit Call."
 
 ## Consent and analytics (fixed 2026-07-29)
 

@@ -3,6 +3,14 @@
 Append-only. One line per decision: date, the call, and (if useful) why. If a session is tempted to ask
 Addie something on this list, it is already answered here.
 
+- 2026-08-31 - GitHub repos moved to the general-pursuits organization. Hub = general-pursuits/claudeprojects-hub.
+  Old adelitaodm URLs redirect but new files/prompts use the general-pursuits path. Branch protection on main =
+  restrict deletions + block force pushes only, with Repository admin on the bypass list; do NOT require pull
+  requests, it would break sync.sh, the cloud tasks, and the Netlify deploy from main. See GITHUB-RULESETS.md.
+- 2026-08-31 - Framework sub-decisions CLOSED: "opportunity units" DECLINED (AI-invented vocabulary, replaced with
+  her own architecting-opportunity language); The Opportunity Blueprint lives as a section on About for now.
+  Also standing: never promise a fixed deliverable in method copy, never map engagements to tier formulas, and
+  AI capability is offered, never preached.
 - 2026-08-10 - "The Opportunity Blueprint" APPROVED to go public. Still open: opportunity-units Version A
   or B, and page location (About vs /approach). The NAME may be used publicly now.
 - 2026-08-10 - Hub saving flow: save to the repo, mirror records to Notion, Addie runs `sh sync.sh`. Never

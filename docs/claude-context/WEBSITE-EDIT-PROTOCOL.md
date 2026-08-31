@@ -1,6 +1,6 @@
 # WEBSITE EDIT PROTOCOL — concurrent edits, versioning, never overwrite
 
-The live site source is its OWN git repo: github.com/adelitaodm/opportunity-designed (branch main ->
+The live site source is its OWN git repo: github.com/general-pursuits/opportunityDesigned-website (branch main ->
 Netlify auto-build). Multiple chats may edit at once. Git is both the version history and the safety net.
 Follow this every time so nothing is overwritten and the site never reverts to an older version.
 

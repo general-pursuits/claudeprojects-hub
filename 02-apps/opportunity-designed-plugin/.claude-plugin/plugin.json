@@ -1,0 +1,16 @@
+{
+  "name": "opportunity-designed",
+  "version": "0.3.0",
+  "description": "Engagement delivery and proof for Opportunity Designed: Fit Call prep, Map/Design/Build client artifacts, content repurposing, and case studies. Defers proposals, pricing, lead triage, and voice enforcement to the standalone skills that own them.",
+  "author": {
+    "name": "Addie Morrow"
+  },
+  "homepage": "https://opportunitydesigned.com",
+  "keywords": [
+    "consulting",
+    "proposals",
+    "retail",
+    "consumer-brands",
+    "brand-voice"
+  ]
+}

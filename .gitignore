@@ -6,7 +6,7 @@ __pycache__/
 ~$*
 .artifact-build*/
 
-# The live website source is its own repo (github.com/adelitaodm/opportunity-designed).
+# The live website source is its own repo (github.com/general-pursuits/opportunityDesigned-website).
 # Keep it as a local clone inside website/ but never track it here.
 01-projects/opportunity-designed/01-current/website/deploy-live/
 

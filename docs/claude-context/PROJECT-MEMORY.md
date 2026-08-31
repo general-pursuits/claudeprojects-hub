@@ -8,7 +8,7 @@ reconcile them (update both). Sections below = one per memory topic file. This i
 
 ## saving-flow (CANONICAL — read before saving ANYTHING)
 
-The hub `/Users/addie/ClaudeProjects/` is a git clone of `github.com/adelitaodm/claudeprojects-hub` (main).
+The hub `/Users/addie/ClaudeProjects/` is a git clone of `github.com/general-pursuits/claudeprojects-hub` (main).
 Every master, reference, or record a session produces MUST be saved into a tracked hub path (under
 `01-projects/`, `02-apps/`, `03-documents/`, `docs/`, or `Projects/`) — never left only in chat or a temp
 folder — and reference records also mirrored to Notion (local repo = source of truth). Then Addie runs
@@ -25,7 +25,7 @@ to sync.
 
 ### Single source of truth
 Website files: `01-projects/opportunity-designed/01-current/website/` in the hub repo, EXCEPT
-`deploy-live/` which is its own git repo → GitHub `adelitaodm/opportunity-designed` (main) →
+`deploy-live/` which is its own git repo → GitHub `general-pursuits/opportunityDesigned-website` (main) →
 Netlify auto-builds (site id 773c8bf0-a668-4411-b7d2-966fe82785a7).
 - Drafts ALWAYS land in `working-drafts/` first (field-notes drafts in its `field-notes/` subfolder); never public.
 - `deploy-live/` = live public mirror. Only approved content moves here.
@@ -105,14 +105,18 @@ quantified case metrics not allowed (see no-confidential-metrics).
 
 ---
 
-## project: Framework codification — "The Opportunity Blueprint" (NAME APPROVED PUBLIC 2026-08-10)
+## project: Framework codification — "The Opportunity Blueprint" (DECIDED, COPY LOCKED 2026-08-31)
 
-NAME DECIDED: "The Opportunity Blueprint" is APPROVED to go public (Addie, 2026-08-10). The name may now be
-used publicly. Sequence: Map -> Design -> Build, closing on the performance premium. FRAMEWORK-CODIFICATION.md
-(rev 2) in website/SEO/. Two sub-decisions still open before full rollout: opportunity-units Version A-or-B,
-and page location (About section vs a dedicated /approach page). Once those settle, use ONE verbatim wording
-everywhere (framework page, homepage, llms.txt ## Method, glossary, JSON-LD, directories, Qwoted bio, LinkedIn,
-Playbook). Do not finalize the units/location wording before her two remaining calls.
+NAME DECIDED and sub-decisions CLOSED (2026-08-31). "The Opportunity Blueprint" is public. Sequence:
+Map -> Design -> Build, closing on the performance premium. "Opportunity units" was DECLINED after review
+(AI-invented vocabulary; replaced with her own language: the Blueprint starts from the brand's core and
+architects the unrealized opportunity around it, building a niche of the brand's own so the client leads
+and others follow). It lives as a section on the About page for now; /approach later. The full locked copy,
+including the three step paragraphs, the operational-discipline paragraph, and the closer, is in
+website/SEO/FRAMEWORK-THREADING-PACK.md; use ONE verbatim wording everywhere (About, homepage, llms.txt
+## Method, glossary, JSON-LD, directories, Qwoted bio, LinkedIn, Playbook). Standing copy rules from this
+round: never promise a fixed deliverable in method copy (output varies by client), never map engagements to
+tier formulas in public copy, and AI capability is offered rather than preached.
 
 ---
 

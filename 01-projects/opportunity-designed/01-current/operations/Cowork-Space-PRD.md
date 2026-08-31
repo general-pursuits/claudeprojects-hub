@@ -117,7 +117,7 @@ Acceptance:
 - Local hub is source of truth; Notion mirrors it; both kept in sync.
 
 **P0-8 · GitHub saving flow (every output lands in the synced hub).**
-The hub `/Users/addie/ClaudeProjects/` is a git clone of `github.com/adelitaodm/claudeprojects-hub` (branch `main`). Acceptance:
+The hub `/Users/addie/ClaudeProjects/` is a git clone of `github.com/general-pursuits/claudeprojects-hub` (branch `main`). Acceptance:
 - Every master, reference, or record a session produces is saved into a tracked hub path (under `01-projects/`, `02-apps/`, `03-documents/`, or `docs/`), not left only in chat or a temp folder.
 - Reference records are also mirrored to Notion; the local hub stays source of truth.
 - The session never pushes through the folder bridge (it leaves a stale `index.lock`). Addie syncs by running `sh sync.sh "what changed"` in Terminal, which pulls-rebases, commits, and pushes to GitHub, so the work is current on phone and computer.
@@ -233,7 +233,7 @@ Save only under /Users/addie/ClaudeProjects/ (top-level: 01-projects, 02-apps, 0
 04-archive). Never save to Desktop/Documents/Downloads. Never delete; move superseded files
 to a dated archive/ folder. Edit only masters; archives are reference-only. Local hub is
 source of truth; Notion mirrors it.
-The hub is a git clone of github.com/adelitaodm/claudeprojects-hub (main). Save every output
+The hub is a git clone of github.com/general-pursuits/claudeprojects-hub (main). Save every output
 into a tracked hub path (not just chat or a temp folder), then tell Addie to run
 `sh sync.sh "what changed"` in Terminal to push it to GitHub, so it's current on phone and
 computer. Never run git or push through the folder bridge (it leaves a stale index.lock).
