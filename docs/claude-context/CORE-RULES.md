@@ -22,7 +22,7 @@ below, so a session spends tokens only on what the task needs. Facts have ONE ca
   IMMEDIATELY as a row on the Notion Tasks board (with a due date if known). Never leave a to-do living
   only in a chat or in memory. (See TASK-TRACKING.md.)
 - Approvals: never submit forms, accept terms, grant OAuth, or deploy. Always pause for Addie's review
-  before anything public. Site deploys = `sh publish.sh "msg"` in deploy-live, run by Addie.
+  before anything public. Site deploys = `sh publish.sh "msg"` in deploy-live, run by Addie. Batch decisions and default the trivial ones (see APPROVALS.md).
 - Website edits: follow WEBSITE-EDIT-PROTOCOL.md. Pull-rebase before editing, never force-push, resolve
   conflicts (never overwrite), one deploy per approval round.
 - Done means done: check DEFINITION-OF-DONE.md before calling any deliverable finished.
@@ -75,6 +75,12 @@ save + sync -> capture any follow-up as a Task -> log the manifest line.
 - Full standing rules (depth) -> docs/claude-context/PROJECT-MEMORY.md
 - Where files live / which is master -> CLAUDE.md + MASTER_FILES.md
 - The workspace as a product (why these rules) -> 01-current/operations/Cowork-Space-PRD.md
+- Token / model tier / parallelization -> TOKEN-OPTIMIZATION.md
+- What needs approval + how to batch decisions -> APPROVALS.md
+- Website/content wordsmith + SEO/AEO workshop -> CONTENT-WORKSHOP.md
+- Templates: create / manage / track / record -> TEMPLATES.md
+- Parallel work / agent graph / knowledge graph / decision batching -> ORCHESTRATION.md
+- Business operations backlog (what to build next) -> BUSINESS-OPS-BACKLOG.md
 
 ## Canonical homes (ONE source per fact — edit here, others point here)
 
