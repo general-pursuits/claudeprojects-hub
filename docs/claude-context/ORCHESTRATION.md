@@ -1,4 +1,4 @@
-# ORCHESTRATION — parallel work, agent graph, knowledge graph, decision batching
+# ORCHESTRATION - parallel work, agent graph, knowledge graph, decision batching
 
 How a big ask becomes many pieces done at once, with Addie pulled in only when a decision truly needs her.
 

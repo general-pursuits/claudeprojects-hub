@@ -1,4 +1,4 @@
-# INCIDENTS — what broke, root cause, guardrail added
+# INCIDENTS - what broke, root cause, guardrail added
 
 Append one entry when something breaks, so the same mistake is not repeated. Guardrails also live in
 CORE-RULES.md "Danger list".

@@ -1,4 +1,4 @@
-# CONTENT WORKSHOP — wordsmithing + AI/search SEO for website and content
+# CONTENT WORKSHOP - wordsmithing + AI/search SEO for website and content
 
 The loop every website page and content piece runs through. Each step names the skill that does it.
 

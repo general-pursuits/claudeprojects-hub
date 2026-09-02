@@ -1,4 +1,4 @@
-# TASK TRACKING — one system so nothing gets forgotten
+# TASK TRACKING - one system so nothing gets forgotten
 
 Goal: every to-do, next action, commitment, and blocker lives in ONE place, gets a due date, and gets
 surfaced back to Addie on a schedule so she is not the one who has to remember.

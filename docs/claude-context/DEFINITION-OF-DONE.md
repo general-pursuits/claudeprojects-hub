@@ -1,4 +1,4 @@
-# DEFINITION OF DONE — a deliverable is not finished until its list is complete
+# DEFINITION OF DONE - a deliverable is not finished until its list is complete
 
 Check the matching list before calling anything done. Prevents orphaned, half-shipped work.
 

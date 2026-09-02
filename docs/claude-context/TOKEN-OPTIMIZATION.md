@@ -1,4 +1,4 @@
-# TOKEN OPTIMIZATION — do more with fewer tokens, no quality loss
+# TOKEN OPTIMIZATION - do more with fewer tokens, no quality loss
 
 How every session spends context well. This is the runtime companion to the Router in CORE-RULES.
 

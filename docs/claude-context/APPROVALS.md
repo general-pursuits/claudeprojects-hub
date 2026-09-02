@@ -1,4 +1,4 @@
-# APPROVALS — what needs sign-off, and how it flows
+# APPROVALS - what needs sign-off, and how it flows
 
 Addie approves; sessions draft and pause. The goal is zero accidental public/irreversible actions AND not
 drowning her in questions. Batch, default the trivial, interrupt only for real forks.

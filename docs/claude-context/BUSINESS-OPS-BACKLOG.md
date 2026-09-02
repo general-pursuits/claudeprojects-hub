@@ -1,4 +1,4 @@
-# BUSINESS OPS BACKLOG — the operating systems a solo consultancy needs
+# BUSINESS OPS BACKLOG - the operating systems a solo consultancy needs
 
 Status of each operational system for Opportunity Designed: HAVE / PARTIAL / GAP, and the next step. Turn any
 PARTIAL or GAP into Tasks on the master board. Update as things move.

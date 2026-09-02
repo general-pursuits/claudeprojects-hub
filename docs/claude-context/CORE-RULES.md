@@ -1,4 +1,4 @@
-# CORE RULES — read this FIRST, every session (always-load layer)
+# CORE RULES - read this FIRST, every session (always-load layer)
 
 The one file every session reads in full. Everything deeper is loaded ON DEMAND via the Router
 below, so a session spends tokens only on what the task needs. Facts have ONE canonical home
@@ -36,7 +36,7 @@ The Router says WHICH doc to load; also cap HOW MUCH. A lead brief pulls from fa
 not the whole site. A content task loads the SEO docs only. Run connector-preflight before any task that
 needs Notion / Netlify / Gmail / Calendar; if the connector is not live, tell Addie before building.
 
-## Danger list (specific traps already hit — do not repeat)
+## Danger list (specific traps already hit - do not repeat)
 
 - Never set Notion `allow_deleting_content: true` (it trashed the hub + 9 databases once). Reference child
   pages with `<page url>` tags instead.
@@ -60,7 +60,7 @@ save + sync -> capture any follow-up as a Task -> log the manifest line.
 
 `OUTPUT: <what> | path: <hub path> | synced: y/n | notion: <link or -> | tasks-logged: <n>`
 
-## Router — load a deeper doc ONLY when the task touches it
+## Router - load a deeper doc ONLY when the task touches it
 
 - Brand voice / palette / logo / copy -> Playbook.docx + Brand Reference (01-current/brand identity/)
 - SEO / keywords / AI visibility / content -> website/SEO/ (COWORK-GUIDE-marketing-seo.md,
@@ -82,7 +82,7 @@ save + sync -> capture any follow-up as a Task -> log the manifest line.
 - Parallel work / agent graph / knowledge graph / decision batching -> ORCHESTRATION.md
 - Business operations backlog (what to build next) -> BUSINESS-OPS-BACKLOG.md
 
-## Canonical homes (ONE source per fact — edit here, others point here)
+## Canonical homes (ONE source per fact - edit here, others point here)
 
 - Public business facts, boilerplate, sameAs set -> BACKLINKS-KIT.md (site llms.txt must match it)
 - Brand voice + visual system -> the Playbook .docx (Brand Reference mirrors it)

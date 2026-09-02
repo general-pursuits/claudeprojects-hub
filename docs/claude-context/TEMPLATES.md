@@ -1,4 +1,4 @@
-# TEMPLATES — create, manage, track, record
+# TEMPLATES - create, manage, track, record
 
 Every reusable asset (doc, Notion, email, deck, web) is a template with a lifecycle and ONE home.
 

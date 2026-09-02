@@ -1,4 +1,4 @@
-# DECISIONS — settled, do NOT re-ask or re-litigate
+# DECISIONS - settled, do NOT re-ask or re-litigate
 
 Append-only. One line per decision: date, the call, and (if useful) why. If a session is tempted to ask
 Addie something on this list, it is already answered here.
