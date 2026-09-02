@@ -56,6 +56,19 @@ gitignored (Mac-local). The daily reconcile trigger also keeps repo and Mac in s
 draft -> voice-scrub -> named-entity-check (holds) -> verify-work -> show mockup if visual (mobile+web) ->
 save + sync -> capture any follow-up as a Task -> log the manifest line.
 
+## Running the scrub gates (canonical - works in cloud, phone, and automations)
+
+The scrubber is ONE script in the hub, NOT the user-skill copy (voice-scrub / named-entity-check ship only
+their SKILL.md to cloud sessions, so their bundled script is absent there). Canonical path:
+`01-projects/opportunity-designed/01-current/website/scripts/scrub.py`
+It enforces AI-tells, em-dashes, banned words, hedged/unsourced numbers, AND the full Named Entity Policy
+(SX Collective blocked; Backcountry legal-scrub vs plain employment history; Mon Ami; SkyCon/SkyZone;
+Norda-plus-Salomon). Run it on every prose deliverable before it ships:
+`python3 <hub>/01-projects/opportunity-designed/01-current/website/scripts/scrub.py FILE --fix`
+Exit 0 = clean, 1 = hard failures to fix, 2 = bad file. In a cloud session, clone
+github.com/general-pursuits/claudeprojects-hub first (or reach the hub via the Mac). If the script cannot be
+found, say so and STOP. Never fake a manual scrub.
+
 ## Tracking manifest (end every deliverable with ONE line)
 
 `OUTPUT: <what> | path: <hub path> | synced: y/n | notion: <link or -> | tasks-logged: <n>`

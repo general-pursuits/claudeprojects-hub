@@ -29,3 +29,5 @@ The loop every website page and content piece runs through. Each step names the 
 Monthly: refresh the keyword table (SEO-COMPETITIVE-LANDSCAPE.md), give page-2 movers a title + internal-link
 pass, run the AI-visibility log. Follow the priority order in COWORK-GUIDE-marketing-seo.md (BOFU long-tail
 first, buyer's-side through-line).
+
+> Gate note: run the canonical scrubber for steps 5 and 8 - `01-projects/opportunity-designed/01-current/website/scripts/scrub.py FILE --fix` (one script, enforces voice AND the Named Entity Policy). Cloud sessions clone the hub first; if it is missing, stop and say so, never fake a manual scrub.
