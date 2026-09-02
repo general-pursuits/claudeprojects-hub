@@ -5,9 +5,11 @@ Secondary: "retail merchandising consulting", "retail consultant" (mid-term), "h
 Title (52 chars): Retail Merchandising Consultant | Opportunity Designed
 Meta (148): A former retail buyer on what a merchandising consultant does, how it differs from a broker, and when to hire one. Buyer's-side retail strategy.
 Schema to add on build: Service (serviceType "Retail merchandising consulting"), Person (Addie Morrow), Organization, FAQPage, BreadcrumbList.
-Internal links (both ways): retail-buying-consultant (buying vs merchandising), get-into-costco, get-into-ulta, glossary, performance-premium, opportunity-review.
+Internal links (both ways): retail-buying-consultant (buying vs merchandising), get-into-costco, get-into-ulta, glossary, performance-premium.
 Cannibalization guard: retail-buying-consultant owns "buying consultant"; this page owns "merchandising consultant". Cross-link, distinct intent.
 -->
+
+> STATUS: PARKED 2026-09-02 for a deep-dive rewrite. This draft may misstate details (positioning, specifics, claims). Do not build or publish until it has been reviewed and corrected.
 
 # Retail Merchandising Consultant
 
@@ -47,15 +49,11 @@ Consumer brands that are ready to grow, and the retailers and marketplaces that 
 
 Most retail advice comes from the selling side. Mine comes from 10+ years in the buyer's chair across 35+ brands. When I read your line, I read it the way the buyer across the table will, then fix what makes them hesitate before you ever pitch.
 
-## Start with an Opportunity Review
-
-The fastest way to see where your growth is: the Opportunity Review, a paid entry engagement. You get a 75-minute working session, a ranked written read in 3 business days, and one follow-up question. It is $450, and it stands on its own or leads into a defined project.
-
 Book a 20-minute Project Fit Call.
 
 ## FAQ
 
-**What does a retail merchandising consultant cost?** Pricing follows scope and outcomes rather than hours. The entry point is the $450 Opportunity Review; larger engagements are scoped to the work.
+**What does a retail merchandising consultant cost?** Pricing follows scope and outcomes rather than hours. Larger engagements are scoped to the work.
 
 **What is the difference between merchandising and buying?** Buying is the retailer's decision to bring a product in. Merchandising is the wider set of calls, assortment, pricing, presentation, and sell-through, that decides whether it stays and grows. A consultant who has done the buying can align your merchandising to that decision.
 

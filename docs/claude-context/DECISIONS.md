@@ -29,3 +29,4 @@ Addie something on this list, it is already answered here.
 - No confidential performance metrics public, ever (sell-through, revenue, margin, units, growth).
 - hello@ display name stays lowercase (her call).
 - Live site fonts are self-hosted; never add a Google Fonts link to site pages (mockups only).
+- 2026-09-02 - Evergreen site pages (service pages, guides) do NOT hardcode offer specifics that change over time (price, session length, turnaround, follow-up count). Name the offer and link to the canonical Opportunity Review page for current details. Keeps pages from referencing stale data.
