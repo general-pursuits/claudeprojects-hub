@@ -84,6 +84,7 @@ found, say so and STOP. Never fake a manual scrub.
 - Client delivery / proposals / case studies / leads -> the opportunity-designed plugin skills (od-*)
 - Notion databases / schema / templates -> PROJECT-MEMORY.md "Notion workspace" section
 - Automations / email / booking / Zaps -> PROJECT-MEMORY.md "Operations, tools & accounts"
+- Google Analytics MCP on the Mac (analytics-mcp) -> ANALYTICS-MCP.md
 - Settled decisions (do NOT re-ask) -> DECISIONS.md
 - Full standing rules (depth) -> docs/claude-context/PROJECT-MEMORY.md
 - Where files live / which is master -> CLAUDE.md + MASTER_FILES.md
@@ -106,5 +107,5 @@ found, say so and STOP. Never fake a manual scrub.
 - Settled decisions -> DECISIONS.md
 - Incidents + guardrails -> INCIDENTS.md (append when something breaks)
 
-_Last updated 2026-08-10. Keep this file short: if a rule needs more than two lines, it belongs in a topic
+_Last updated 2026-09-03. Keep this file short: if a rule needs more than two lines, it belongs in a topic
 doc and a Router entry here._

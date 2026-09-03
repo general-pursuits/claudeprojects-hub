@@ -333,6 +333,10 @@ traffic).
 - Booking: cal.com/opportunitydesigned/project-fit-call; Google Meet default; bookings on Google
   "opportunitydesigned" calendar; confirmed bookings → Gmail 02 Bookings.
 - Social profiles (exact set): see Backlink kit section above.
+- Google Analytics MCP (`analytics-mcp`): Mac-only Claude Code server giving read access to the GA4 Admin
+  and Data APIs for opportunitydesigned.com (G-M1FVLM07Z1). Installed with `claude mcp add --scope user`, so
+  it lives on the Mac and cloud/phone sessions do not see it; those use Supermetrics for GA4. Setup runbook
+  and troubleshooting: docs/claude-context/ANALYTICS-MCP.md.
 - Fonts installed on her Mac (Anton + Inter, 2026-08-03; Word embeds fonts) — no font-install steps needed for
   .docx work; her Word→PDF export is the brand-perfect output.
 
