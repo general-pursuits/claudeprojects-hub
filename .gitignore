@@ -21,3 +21,6 @@ push-to-cloud.sh
 
 # Separate project, not part of this hub (was accidentally added as a gitlink)
 theBaddiePackWebsite/
+
+# LinkedIn image repo, its own repo (github.com/general-pursuits/linkedin-hub). Local clone only.
+linkedin-hub/
