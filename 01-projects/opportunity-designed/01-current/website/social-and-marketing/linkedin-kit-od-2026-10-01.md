@@ -1,6 +1,6 @@
 # LinkedIn kit - Opportunity Designed company page + Addie Morrow profile
 
-Last saved: 2026-09-24
+Last saved: 2026-10-01
 Profile approach: Hybrid (Addie approved 2026-09-24). Opportunity Designed is the current role and links to the company page. Headline and Skills keep buying, category, and sourcing terms so recruiter search and Job Match still find her.
 Images: general-pursuits/linkedin-hub repo (drafts, finals, archive) and the Photos album "OD LinkedIn".
 Schedule: Notion, social-od > Posts database, LinkedIn channel.
@@ -11,12 +11,12 @@ Recommended picks are marked (rec).
 
 ## 1. Company page (linkedin.com/company/opportunity-designed)
 
-### Tagline (120 max). Pick one.
-- A (rec): Growth strategy for consumer brands and the businesses that sell them.
-- B: Own your category. Lead the pace.
-- C: Strategy consulting for consumer brand growth. Smarter purchasing, sharper positioning, and market access.
+### Tagline (120 max)
+CHOSEN 2026-10-01: Growth strategy for consumer brands and the businesses that sell them.
 
-A matches the site schema, llms.txt, and every directory listing word for word, which keeps the entity consistent for search and AI answers.
+Not used: "Own your category. Lead the pace." and "Strategy consulting for consumer brand growth. Smarter purchasing, sharper positioning, and market access."
+
+It matches the site schema, llms.txt, and every directory listing word for word, which keeps the entity consistent for search and AI answers.
 
 ### Overview / About (2,000 character limit)
 
