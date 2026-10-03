@@ -1,6 +1,6 @@
 # LinkedIn kit - Opportunity Designed company page + Addie Morrow profile
 
-Last saved: 2026-10-01
+Last saved: 2026-10-02
 Profile approach: Hybrid (Addie approved 2026-09-24). Opportunity Designed is the current role and links to the company page. Headline and Skills keep buying, category, and sourcing terms so recruiter search and Job Match still find her.
 Images: general-pursuits/linkedin-hub repo (drafts, finals, archive) and the Photos album "OD LinkedIn".
 Schedule: Notion, social-od > Posts database, LinkedIn channel.
@@ -141,7 +141,7 @@ Services description: Strategy consulting for consumer brands and retailers. Ret
 Set to "Recruiters only". The public green frame would compete with the Opportunity Designed headline. Recruiters still see it in search.
 
 ### Images (from linkedin-hub/finals)
-- Background: background-profile-addie-2026-09-24.png (1584 x 396)
+- Background: pick one from the profile header set below (1584 x 396)
 - Profile photo: keep the current headshot (same image as the site, headshot-square.jpeg)
 
 ---
@@ -293,3 +293,20 @@ Repost (Addie): My calendar is open for a few of these each week.
 - Personal background: 1584 x 396. The profile photo covers the lower left on desktop and the left center on mobile.
 - Post images: 1080 x 1350 (4:5 portrait). Fills the most screen on mobile.
 - Filenames: <what>-<scope>-<YYYY-MM-DD>.png, lowercase, hyphenated, no version numbers.
+
+---
+
+## 6. Profile header set (2026-10-02)
+All on the original dark mountain photo, with the type kept clear of the ridgeline. Files are in linkedin-hub/drafts/2026-10-02 and the Photos album "OD LinkedIn profile headers 2026-10-02". Review sheet: mockup-profile-header-set-addie-2026-10-02.png (desktop and mobile).
+- No text: background-profile-textfree-addie-2026-10-02.png
+- Name, tagline, website: background-profile-ridge-option-1-addie-2026-10-02.png
+- Logo only: background-profile-logo-addie-2026-10-02.png
+- Name only: background-profile-name-addie-2026-10-02.png
+- Name and tagline: background-profile-name-tagline-addie-2026-10-02.png
+- Name and website: background-profile-name-website-addie-2026-10-02.png
+- Name and logo: background-profile-name-logo-addie-2026-10-02.png
+- Tagline and logo: background-profile-tagline-logo-addie-2026-10-02.png
+- Tagline and website: background-profile-tagline-website-addie-2026-10-02.png
+- Name, logo, tagline: background-profile-name-logo-tagline-addie-2026-10-02.png
+- Name, logo, tagline, website: background-profile-name-logo-tagline-website-addie-2026-10-02.png
+Status: drafts. The one Addie picks moves to linkedin-hub/finals/profile.
