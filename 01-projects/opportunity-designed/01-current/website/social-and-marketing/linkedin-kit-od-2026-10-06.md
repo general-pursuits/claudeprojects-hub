@@ -1,6 +1,6 @@
 # LinkedIn kit - Opportunity Designed company page + Addie Morrow profile
 
-Last saved: 2026-10-02
+Last saved: 2026-10-06
 Profile approach: Hybrid (Addie approved 2026-09-24). Opportunity Designed is the current role and links to the company page. Headline and Skills keep buying, category, and sourcing terms so recruiter search and Job Match still find her.
 Images: general-pursuits/linkedin-hub repo (drafts, finals, archive) and the Photos album "OD LinkedIn".
 Schedule: Notion, social-od > Posts database, LinkedIn channel.
@@ -297,7 +297,7 @@ Repost (Addie): My calendar is open for a few of these each week.
 ---
 
 ## 6. Profile header set (2026-10-02)
-All on the original dark mountain photo, with the type kept clear of the ridgeline. Files are in linkedin-hub/drafts/2026-10-02 and the Photos album "OD LinkedIn profile headers 2026-10-02". Review sheet: mockup-profile-header-set-addie-2026-10-02.png (desktop and mobile).
+All on the original dark mountain photo, with the type kept clear of the ridgeline. Files are in linkedin-hub/finals/profile (moved from drafts 2026-10-06) and the Photos album "OD LinkedIn profile headers 2026-10-02". Review sheet: mockup-profile-header-set-addie-2026-10-02.png (desktop and mobile).
 - No text: background-profile-textfree-addie-2026-10-02.png
 - Name, tagline, website: background-profile-ridge-option-1-addie-2026-10-02.png
 - Logo only: background-profile-logo-addie-2026-10-02.png
@@ -309,4 +309,16 @@ All on the original dark mountain photo, with the type kept clear of the ridgeli
 - Tagline and website: background-profile-tagline-website-addie-2026-10-02.png
 - Name, logo, tagline: background-profile-name-logo-tagline-addie-2026-10-02.png
 - Name, logo, tagline, website: background-profile-name-logo-tagline-website-addie-2026-10-02.png
-Status: drafts. The one Addie picks moves to linkedin-hub/finals/profile.
+Status: finals (Addie approved 2026-10-06). Pick one to upload to the profile.
+
+---
+
+## 7. Company cover set (2026-10-06)
+Same 11 combinations as the profile header set, on the same dark mountain photo. 4200 x 700. Text sits on the right, clear of the ridgeline and the logo tile. Files are in linkedin-hub/drafts/2026-10-06 and the Photos album "OD LinkedIn company covers 2026-10-06". Review sheet: mockup-company-cover-set-od-2026-10-06.png.
+Filenames: cover-company-<combo>-od-2026-10-06.png, where combo is one of: textfree, name-tagline-website, logo, name, name-tagline, name-website, name-logo, tagline-logo, tagline-website, name-logo-tagline, name-logo-tagline-website.
+Status: drafts. Move to linkedin-hub/finals/company on approval.
+
+## 8. Brand post set (2026-10-06)
+Same 11 combinations as brand cards for posts. 1080 x 1350. Photo on top, text in the lower left. Files are in linkedin-hub/drafts/2026-10-06 and the Photos album "OD LinkedIn brand posts 2026-10-06". Review sheet: mockup-post-brand-set-od-2026-10-06.png.
+Filenames: post-brand-<combo>-od-2026-10-06.png (same combo list as section 7).
+Status: drafts. Move to linkedin-hub/finals/posts on approval.
