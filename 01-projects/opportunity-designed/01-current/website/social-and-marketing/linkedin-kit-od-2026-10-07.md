@@ -158,7 +158,7 @@ Set to "Recruiters only". The public green frame would compete with the Opportun
 ## 4. Posting kit (schedule in Notion)
 
 Cadence: Tuesday and Thursday, 8:00 AM Mountain. Company page posts first. Addie reposts from her profile with the line under "Repost".
-UTM pattern: utm_source=linkedin&utm_medium=social&utm_campaign=company_launch&utm_content=post-NN. Short links (opportunitydesigned.com/p01 and so on) carry these tags through redirects in the site _redirects file. They work only after that file is deployed.
+UTM pattern: utm_source=linkedin&utm_medium=social&utm_campaign=company_launch&utm_content=post-NN. Short links (opportunitydesigned.com/p01 and so on) carry these tags through redirects in the site _redirects file. Live since 2026-10-07.
 
 ### Post 01 - Tue 2026-09-29 - Launch
 Image: post-01-launch-od-2026-09-24.png
@@ -332,4 +332,4 @@ Every link in this kit uses a short opportunitydesigned.com link. Each one forwa
 - opportunitydesigned.com/notes: Field Notes, profile Featured
 - opportunitydesigned.com/fit: the site contact page, where the Project Fit Call calendar opens on opportunitydesigned.com. Visitors never see the cal.com address, and bookings count in the site analytics.
 - opportunitydesigned.com/p01, /p03, /p04, /p05, /p06: first-comment links for posts 01, 03, 04, 05, 06
-Source: website/working-drafts/linkedin-short-links/_redirects. Status: draft, not deployed. The links do not work until it is copied to deploy-live and published.
+Source: website/working-drafts/linkedin-short-links/_redirects. Status: LIVE 2026-10-07 (site commit 16d9584). All 9 links checked and forwarding.
