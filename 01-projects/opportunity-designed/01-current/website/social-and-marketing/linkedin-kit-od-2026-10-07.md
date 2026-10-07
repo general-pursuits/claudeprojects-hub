@@ -1,6 +1,6 @@
 # LinkedIn kit - Opportunity Designed company page + Addie Morrow profile
 
-Last saved: 2026-10-06
+Last saved: 2026-10-07
 Profile approach: Hybrid (Addie approved 2026-09-24). Opportunity Designed is the current role and links to the company page. Headline and Skills keep buying, category, and sourcing terms so recruiter search and Job Match still find her.
 Images: general-pursuits/linkedin-hub repo (drafts, finals, archive) and the Photos album "OD LinkedIn".
 Schedule: Notion, social-od > Posts database, LinkedIn channel.
@@ -43,13 +43,13 @@ Based in Salt Lake City. Working with brands across the US.
 Start with a 20-minute Project Fit Call at opportunitydesigned.com.
 
 ### Page details
-- Website: https://opportunitydesigned.com/?utm_source=linkedin&utm_medium=social&utm_campaign=company_page
+- Website: opportunitydesigned.com/co
 - Industry: Business Consulting and Services
 - Company size: 0-1 employees
 - Company type: Self-Employed (switch to Privately Held if Opportunity Designed is registered as an LLC. Confirm which applies.)
 - Founded: 2026
 - Location: Salt Lake City, Utah, United States
-- Custom button: "Book an appointment" pointing to https://cal.com/opportunitydesigned/project-fit-call
+- Custom button: "Book an appointment" pointing to opportunitydesigned.com/fit
   (Fallback if that option is not offered on your page: "Visit website" pointing to the Website URL above.)
 
 ### Specialties (20 max, 20 used)
@@ -90,7 +90,7 @@ Core skills: category management, strategic sourcing, vendor management, open-to
 
 Based in Salt Lake City. Working remotely across the US.
 
-Start with a 20-minute Project Fit Call: https://cal.com/opportunitydesigned/project-fit-call
+Start with a 20-minute Project Fit Call: opportunitydesigned.com/fit
 
 ### Experience entry (new, current)
 - Title: Founding Consultant
@@ -110,13 +110,13 @@ Strategy consulting for consumer brands and the retailers that sell them.
 - Skills to attach to this entry (5): Category Management, Retail Buying, Assortment Planning, Vendor Management, Strategic Sourcing
 
 ### Featured section (in this order)
-1. Link: https://opportunitydesigned.com/?utm_source=linkedin&utm_medium=social&utm_campaign=profile_featured
+1. Link: opportunitydesigned.com/in
    Title: Opportunity Designed
    Description: Growth strategy for consumer brands and the businesses that sell them.
-2. Link: https://cal.com/opportunitydesigned/project-fit-call
+2. Link: opportunitydesigned.com/fit
    Title: Book a 20-minute Project Fit Call
    Description: A short call to see if there is a fit.
-3. Link: https://opportunitydesigned.com/field-notes?utm_source=linkedin&utm_medium=social&utm_campaign=profile_featured
+3. Link: opportunitydesigned.com/notes
    Title: Field Notes
    Description: Short notes on how retail buying and category strategy work.
 4. Post: pin the company launch post once it is live.
@@ -158,7 +158,7 @@ Set to "Recruiters only". The public green frame would compete with the Opportun
 ## 4. Posting kit (schedule in Notion)
 
 Cadence: Tuesday and Thursday, 8:00 AM Mountain. Company page posts first. Addie reposts from her profile with the line under "Repost".
-UTM pattern: utm_source=linkedin&utm_medium=social&utm_campaign=company_launch&utm_content=post-NN
+UTM pattern: utm_source=linkedin&utm_medium=social&utm_campaign=company_launch&utm_content=post-NN. Short links (opportunitydesigned.com/p01 and so on) carry these tags through redirects in the site _redirects file. They work only after that file is deployed.
 
 ### Post 01 - Tue 2026-09-29 - Launch
 Image: post-01-launch-od-2026-09-24.png
@@ -175,7 +175,7 @@ I'm also writing it down. Short field notes on how retail buying and category st
 
 Follow along here. See what others miss.
 
-First comment: New field notes land here as I write them: https://opportunitydesigned.com/field-notes?utm_source=linkedin&utm_medium=social&utm_campaign=company_launch&utm_content=post-01
+First comment: New field notes land here as I write them: opportunitydesigned.com/p01
 
 Repost (Addie): Opportunity Designed is live. Brands and retailers, this one is for you.
 
@@ -192,7 +192,7 @@ Brands get a clear path into the right retailers. Retailers get categories built
 
 If either one sounds like your year ahead, I'd like to hear about it.
 
-First comment: A 20-minute Project Fit Call is the first step: https://cal.com/opportunitydesigned/project-fit-call
+First comment: A 20-minute Project Fit Call is the first step: opportunitydesigned.com/fit
 
 ### Post 03 - Tue 2026-10-06 - Who we help
 Image: post-03-who-we-help-od-2026-09-24.png
@@ -207,7 +207,7 @@ Founders and operators. Leaders willing to rethink convention in pursuit of what
 
 Different starting points. Same first step.
 
-First comment: See where you fit: https://opportunitydesigned.com/who-we-help?utm_source=linkedin&utm_medium=social&utm_campaign=company_launch&utm_content=post-03
+First comment: See where you fit: opportunitydesigned.com/p03
 
 Repost (Addie): Which one are you? Tell me in the comments.
 
@@ -224,7 +224,7 @@ Build. What makes it stick? Buying and merchandising operations that hold full p
 
 The scope changes with each brand. The path stays the same.
 
-First comment: More on the method: https://opportunitydesigned.com/who-we-help?utm_source=linkedin&utm_medium=social&utm_campaign=company_launch&utm_content=post-04
+First comment: More on the method: opportunitydesigned.com/p04
 
 Repost (Addie): Map, Design, Build. It is how I have run every category I owned.
 
@@ -237,7 +237,7 @@ We call that tier the performance premium. Knowing whether your product lives th
 
 New field note: Performance Premium, a tier with no name.
 
-First comment: Read it here: https://opportunitydesigned.com/field-notes/performance-premium?utm_source=linkedin&utm_medium=social&utm_campaign=company_launch&utm_content=post-05
+First comment: Read it here: opportunitydesigned.com/p05
 
 Repost (Addie): This is the question I asked about every line I bought.
 
@@ -256,7 +256,7 @@ Most pitches lead with the story. Buyers read the fit first.
 
 Build the pitch in that order and the story lands.
 
-First comment: More notes from the buying side: https://opportunitydesigned.com/field-notes?utm_source=linkedin&utm_medium=social&utm_campaign=company_launch&utm_content=post-06
+First comment: More notes from the buying side: opportunitydesigned.com/p06
 
 ### Post 07 - Tue 2026-10-20 - Service spotlight: retail access
 Image: post-07-retail-access-od-2026-09-24.png
@@ -270,7 +270,7 @@ Retail access work at Opportunity Designed covers:
 
 Built by a former buyer, for brands ready for the next shelf.
 
-First comment: Start with a 20-minute Project Fit Call: https://cal.com/opportunitydesigned/project-fit-call
+First comment: Start with a 20-minute Project Fit Call: opportunitydesigned.com/fit
 
 Repost (Addie): The first order is the start. The reorder is the goal.
 
@@ -281,7 +281,7 @@ Not sure where to start? Start with 20 minutes.
 
 A Project Fit Call is a short conversation about where your brand or category stands and what would move it. You leave with a clearer next step either way.
 
-First comment: Book a time: https://cal.com/opportunitydesigned/project-fit-call
+First comment: Book a time: opportunitydesigned.com/fit
 
 Repost (Addie): My calendar is open for a few of these each week.
 
@@ -322,3 +322,14 @@ Status: drafts. Move to linkedin-hub/finals/company on approval.
 Same 11 combinations as brand cards for posts. 1080 x 1350. Photo on top, text in the lower left. Files are in linkedin-hub/drafts/2026-10-06 and the Photos album "OD LinkedIn brand posts 2026-10-06". Review sheet: mockup-post-brand-set-od-2026-10-06.png.
 Filenames: post-brand-<combo>-od-2026-10-06.png (same combo list as section 7).
 Status: drafts. Move to linkedin-hub/finals/posts on approval.
+
+---
+
+## 9. Short links (2026-10-07)
+Every link in this kit uses a short opportunitydesigned.com link. Each one forwards to the full address with its tracking tags, so reports still separate company page, profile, and each post.
+- opportunitydesigned.com/co: home page, company page website field
+- opportunitydesigned.com/in: home page, profile Featured
+- opportunitydesigned.com/notes: Field Notes, profile Featured
+- opportunitydesigned.com/fit: Project Fit Call booking page (cal.com)
+- opportunitydesigned.com/p01, /p03, /p04, /p05, /p06: first-comment links for posts 01, 03, 04, 05, 06
+Source: website/working-drafts/linkedin-short-links/_redirects. Status: draft, not deployed. The links do not work until it is copied to deploy-live and published.
