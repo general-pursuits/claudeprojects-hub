@@ -330,6 +330,6 @@ Every link in this kit uses a short opportunitydesigned.com link. Each one forwa
 - opportunitydesigned.com/co: home page, company page website field
 - opportunitydesigned.com/in: home page, profile Featured
 - opportunitydesigned.com/notes: Field Notes, profile Featured
-- opportunitydesigned.com/fit: Project Fit Call booking page (cal.com)
+- opportunitydesigned.com/fit: the site contact page, where the Project Fit Call calendar opens on opportunitydesigned.com. Visitors never see the cal.com address, and bookings count in the site analytics.
 - opportunitydesigned.com/p01, /p03, /p04, /p05, /p06: first-comment links for posts 01, 03, 04, 05, 06
 Source: website/working-drafts/linkedin-short-links/_redirects. Status: draft, not deployed. The links do not work until it is copied to deploy-live and published.
