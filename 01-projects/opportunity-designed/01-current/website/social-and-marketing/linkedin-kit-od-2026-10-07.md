@@ -330,6 +330,7 @@ Every link in this kit uses a short opportunitydesigned.com link. Each one forwa
 - opportunitydesigned.com/co: home page, company page website field
 - opportunitydesigned.com/in: home page, profile Featured
 - opportunitydesigned.com/notes: Field Notes, profile Featured
-- opportunitydesigned.com/fit: the site contact page, where the Project Fit Call calendar opens on opportunitydesigned.com. Visitors never see the cal.com address, and bookings count in the site analytics.
+- opportunitydesigned.com/fit: forwards to opportunitydesigned.com/book (since 2026-10-07)
+- opportunitydesigned.com/book: booking page with the Project Fit Call calendar, phone (385) 623-7896, hello@opportunitydesigned.com and a Project Fit Call FAQ. Not linked anywhere on the site; listed in the sitemap only. Use this as the booking link on social media.
 - opportunitydesigned.com/p01, /p03, /p04, /p05, /p06: first-comment links for posts 01, 03, 04, 05, 06
 Source: website/working-drafts/linkedin-short-links/_redirects. Status: LIVE 2026-10-07 (site commit 16d9584). All 9 links checked and forwarding.
